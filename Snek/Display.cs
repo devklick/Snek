@@ -101,35 +101,37 @@ public class Display
     /// </summary>
     private void InitializeConsole()
     {
-        // In Windows OS, we can control the size of the terminal at runtime, 
-        // however in other OS's we dont have that option. 
-        // If it's Windows, set the terminal size, otherwise check the current 
-        // terminal to see if it will support the desired game size.
-
-        // TODO: Why use magic number 2? It works, by why?!
-
-        var windowWidth = _width + 2;
-        var windowHeight = _height + 2;
-
+        Console.CursorVisible = false;
         if (OperatingSystem.IsWindows())
         {
-
-            Console.WindowWidth = windowWidth;
-            Console.WindowHeight = windowHeight;
-            Console.BufferWidth = Console.WindowWidth;
-            Console.BufferHeight = Console.WindowHeight;
+            InitializeWindowsConsole();
         }
         else
         {
-            var badWidth = Console.WindowWidth < windowWidth;
-            var badHeight = Console.WindowHeight < windowHeight;
+            InitializeNonWindowsConsole();
+        }
+    }
 
-            if (badWidth || badHeight)
-            {
-                var axes = badWidth && badHeight ? "width and height" : badWidth ? "width" : "height";
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private void InitializeWindowsConsole()
+    {
+        // In Windows OS, we can control the size of the terminal at runtime, 
+        // so lets set the dimensions based on the size of the game.
+        Console.SetWindowSize(_width, _height);
+        Console.SetBufferSize(_width, _height);
+    }
 
-                throw new Exception($"The console dimensions are too small to support the game size. Try increasing the console {axes}.");
-            }
+    private void InitializeNonWindowsConsole()
+    {
+        // In non-windows OS, we cant control the console size.
+        // Instead, verify that its size will support the game dimensions and throw an error if not.
+        var badWidth = Console.WindowWidth < _width;
+        var badHeight = Console.WindowHeight < _height;
+
+        if (badWidth || badHeight)
+        {
+            var axes = badWidth && badHeight ? "width and height" : badWidth ? "width" : "height";
+            throw new NotSupportedException($"The console dimensions are too small to support the game size. Try increasing the console {axes}.");
         }
     }
 }
