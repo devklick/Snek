@@ -8,6 +8,5 @@
     "activityBar.background": "#232174",
     "titleBar.activeBackground": "#312EA3",
     "titleBar.activeForeground": "#FCFCFE"
-  },
-  "terminal.explorerKind": "external"
+  }
 }
