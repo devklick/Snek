@@ -1,17 +1,23 @@
-# Snek
-This is a console-based version of the classic mobile game, Snake.
+<h1 align="center">
+    Snek
+</h1>
 
-Using the arrow keys on your keyboard, control the Snek and try to eat all the yummy blue blocks. Every time a block is eaten, the Snek grows in size and speeds up.
+<p align="center">
+    A terminal version of the classic mobile game, Snake.
+</p>
+<br/>
+<br/>
+<br/>
+<br/>
 
-![Gameplay](/Images/Gameply001.gif)
-
-It was created and Forgotten about a long time ago, so it's a little rough around the edges and could do with some polishing.
-
-#### TODO: 
-- [ ] Move to .Net 5
-- [ ] Write unit tests
-- [ ] Introduce dependency injection
-- [ ] Refactor/clean up code
-- [ ] Code comments and XML documentation
-- [ ] Improve UI (border, score, speed, size etc.)
-- [ ] Configure game on startup (size, speed, colours etc.)
+#### Possible Enhancements:
+- [ ] Add HUD (display score, clock, debug info etc)
+- [ ] Add "lunge" functionality, allowing the player to lunch in the current direction (cannot cancel this, will be cancelled when hitting either the enemy, wall or self)
+- [ ] Add different levels of difficulty
+- [ ] Add options screen
+- [ ] Add options screen
+- [ ] Allow key bindings to be configured
+- [ ] Hide caret after drawing to console
+- [ ] Functionality to travel through walls
+- [ ] Sound effects
+- [ ] Fix annoying bug where extending player tail appears to be delayed

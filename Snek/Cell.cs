@@ -1,37 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Snek.Abstract;
+using Snek.Interfaces;
 
-namespace Snek
+namespace Snek;
+
+public class Cell : StyledObject, IPositioned
 {
-    public class Cell
+    public Position Position { get; }
+    public override ConsoleColor BackgroundColor { get; } = ConsoleColor.Black;
+    public override ConsoleColor SpriteColor { get; } = ConsoleColor.Black;
+    public override char Sprite { get; } = ' ';
+
+    public Cell(int x, int y)
     {
-        public Position Position;
+        Position = new Position(x, y);
+    }
 
-        public ConsoleColor BackgroundColour = ConsoleColor.Black;
-        public ConsoleColor ForegroundColour = ConsoleColor.Black;
-        public Char DisplayChar = ' ';
+    public Cell(int x, int y, ConsoleColor backgroundColor, ConsoleColor foregroundColor)
+    {
+        Position = new Position(x, y);
+        BackgroundColor = backgroundColor;
+        SpriteColor = foregroundColor;
+    }
 
-        public Cell(int x, int y )
-        {
-            Position = new Position( x, y );
-        }
-
-        public Cell( int x, int y, ConsoleColor backgroundColour, ConsoleColor foregroundColour )
-        {
-            Position = new Position( x, y );
-            BackgroundColour = backgroundColour;
-            ForegroundColour = foregroundColour;
-        }
-
-        public Cell( int x, int y, ConsoleColor backgroundColour, ConsoleColor foregroundColour, Char displayChar)
-        {
-            Position = new Position( x, y );
-            BackgroundColour = backgroundColour;
-            ForegroundColour = foregroundColour;
-            DisplayChar = displayChar;
-        }
+    public Cell(int x, int y, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char sprite)
+    {
+        Position = new Position(x, y);
+        BackgroundColor = backgroundColor;
+        SpriteColor = foregroundColor;
+        Sprite = sprite;
     }
 }
