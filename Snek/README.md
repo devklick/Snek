@@ -1,5 +1,0 @@
-- Game
-    - Display
-    - Grid
-    - Player
-    - Target

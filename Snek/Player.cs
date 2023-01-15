@@ -14,9 +14,13 @@ public class Player : StyledObject
     public Cell Head => Cells.First();
     public Cell Tail => Cells.Last();
 
-    public Player(Position position)
+    public Player(Position position, int initialLength = 5)
     {
-        Cells = new() { new Cell(position.X, position.Y, BackgroundColor, SpriteColor, Sprite) };
+        Cells = new();
+        for (var i = 0; i < initialLength; i++)
+        {
+            Cells.Add(new Cell(position.X, position.Y + i, BackgroundColor, SpriteColor, Sprite));
+        }
         Facing = Direction.North;
     }
 
