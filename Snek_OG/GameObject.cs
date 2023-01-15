@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Snek
+namespace Snek_OG
 {
     class GameObject
     {
@@ -26,13 +26,13 @@ namespace Snek
         public void GenerateNew()
         {
             Position objectStartPosition = Engine.Grid.GetRandomAvailiblePosition();
-            Cell = new Cell( objectStartPosition.X, objectStartPosition.Y, ConsoleColor.Blue, ConsoleColor.Red );
+            Cell = new Cell(objectStartPosition.X, objectStartPosition.Y, ConsoleColor.Blue, ConsoleColor.Red);
             Draw();
         }
 
         public void Draw()
         {
-            Engine.Display.Draw( Cell );
+            Engine.Display.Draw(Cell);
         }
 
         public void UpdateGameObjectOnGrid()
