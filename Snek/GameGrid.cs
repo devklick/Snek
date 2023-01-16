@@ -1,25 +1,17 @@
 using Snek.Abstract;
+using Snek.Events;
+using Snek.Interfaces;
 
 namespace Snek;
 
 /// <summary>
-/// The grid contains all game elements and triggers information to be drawn to the display.
+/// The <see cref="GameGrid"/> contains all game elements and triggers information to be drawn to the display.
 /// </summary>
-public class Grid : StyledObject
+/// <remarks>
+/// Note that this does not contain any information that is part of the <see cref="Hud"/>. 
+/// </remarks>
+public class GameGrid : StyledObject, IGrid
 {
-    /// <summary>
-    /// Object that exposes the relevant information that's published when a <see cref="Snek.Cell"/> is updated.
-    /// </summary>
-    /// <param name="Cell">The cell that's been updated</param>
-    public record CellUpdatedEventArgs(Cell Cell);
-
-    /// <summary>
-    /// The signature of the method that consumes Cell update events.
-    /// </summary>
-    /// <param name="sender">The thing that sent the event</param>
-    /// <param name="e">The event arguments</param>
-    public delegate void CellUpdatedEventHandler(object sender, CellUpdatedEventArgs e);
-
     public int Width { get; }
     public int Height { get; }
 
@@ -43,7 +35,7 @@ public class Grid : StyledObject
             && (!_player?.Cells?.Any(playerCell => playerCell.Position == cell.Position) ?? true))
         .Select(cell => cell.Position);
 
-    public Grid(int width, int height)
+    public GameGrid(int width, int height)
     {
         Width = width;
         Height = height;

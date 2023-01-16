@@ -1,3 +1,4 @@
+using Snek.Events;
 using Snek.Extensions;
 
 namespace Snek;
@@ -7,15 +8,21 @@ namespace Snek;
 /// </summary>
 public class Game
 {
-    private readonly Grid _grid;
+    private readonly GameGrid _grid;
     private readonly Player _player;
     private Enemy _enemy;
     private readonly Display _display;
+    private readonly Hud _hud;
     private readonly InputManager _input;
     private GameState _state;
     private int _ticksPerSecond = 3;
     private int _delay => (int)((float)1 / _ticksPerSecond * 1000);
     private int _score = 0;
+
+    /// <summary>
+    /// The event that is fired whenever a <see cref="Cell"/> has been updated.
+    /// </summary>
+    private event ScoreUpdatedEventHandler? ScoreUpdated;
 
     public Game(int width, int height)
     {
@@ -23,8 +30,17 @@ public class Game
         // Grid has to be created first, obviously
         _grid = new(width, height);
 
+        // Multipliers are used for presenting information to the display. 
+        // Since each cell on basic console is around twice as tall as it is wide, 
+        // but we want to make each cell seem more square than rectangular, we apply multipliers.
+        int displayWidthMultiplier = 2, displayHeightMultiplier = 1;
+
+        // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
+        // However we want it's width to the the same as the multiplied grid dimensions.
+        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated);
+
         // Next, the display needs to be created, so it knows about and draws the grid
-        _display = new(_grid, 2, 1);
+        _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
 
         // Next, the player needs to be created an added to the grid.
         // Doing so will update the display with the player cells 
@@ -36,8 +52,10 @@ public class Game
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
 
-        // The order of the input manager isnt really important.
+        // The instantiation order of the input manager isnt really important.
         _input = new();
+
+        SetScore(0);
     }
 
     /// <summary>
@@ -133,7 +151,14 @@ public class Game
         _grid.ExtendPlayerTail();
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
-        _score++;
+
+        SetScore(_score + 1);
         _ticksPerSecond++;
+    }
+
+    private void SetScore(int score)
+    {
+        _score = score;
+        ScoreUpdated?.Invoke(this, new ScoreUpdatedEventArgs(score));
     }
 }
