@@ -1,3 +1,4 @@
+using System.Timers;
 using Snek.Abstract;
 using Snek.Events;
 using Snek.Interfaces;
@@ -35,10 +36,13 @@ public class Hud : StyledObject, IGrid
 
     private readonly Dictionary<(int x, int y), Cell> _cells = new();
     private readonly TextBox _scoreTextBox;
+    private readonly TextBox _gamePlayTimerTextBox;
 
     public event CellUpdatedEventHandler? CellUpdated;
 
-    public Hud(int width, int height, Position anchor, ref ScoreUpdatedEventHandler? scoreUpdatedEventHandler)
+    public Hud(int width, int height, Position anchor,
+        ref ScoreUpdatedEventHandler? scoreUpdatedEventHandler,
+        ref GamePlayTimer gamePlayTimer)
     {
         Width = width;
         Height = height;
@@ -46,15 +50,32 @@ public class Hud : StyledObject, IGrid
         BackgroundColor = ConsoleColor.DarkBlue;
         SpriteColor = ConsoleColor.Black;
         scoreUpdatedEventHandler += OnGameScoreUpdated;
+        gamePlayTimer.Updated += GamePlayTimerUpdated;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
 
         _scoreTextBox = new TextBox(new Position(1, 1), Alignment.Left, BackgroundColor, SpriteColor, "Score");
+        _gamePlayTimerTextBox = new TextBox(new Position(1, 2), Alignment.Left, BackgroundColor, SpriteColor, "Time");
     }
 
-    public void OnGameScoreUpdated(object sender, ScoreUpdatedEventArgs e)
+    private void GamePlayTimerUpdated(object? sender, GamePlayTimerUpdatedEventArgs e)
+    {
+        _gamePlayTimerTextBox.SetValue(((int)e.Elapsed.TotalSeconds).ToString() + "s");
+
+        var y = _gamePlayTimerTextBox.Anchor.Y;
+        for (int i = 0; i < _gamePlayTimerTextBox.Content.Length; i++)
+        {
+            var sprite = _gamePlayTimerTextBox.Content.ElementAt(i);
+            var x = _gamePlayTimerTextBox.Anchor.X + i;
+            var cell = new Cell(x, y, _gamePlayTimerTextBox.BackgroundColor, _gamePlayTimerTextBox.ForegroundColor, sprite);
+            _cells[(x, y)] = cell;
+            CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
+        }
+    }
+
+    public void OnGameScoreUpdated(object? sender, ScoreUpdatedEventArgs e)
     {
         _scoreTextBox.SetValue(e.Score.ToString());
 

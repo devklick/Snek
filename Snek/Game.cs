@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Timers;
 using Snek.Events;
 using Snek.Extensions;
 
@@ -24,8 +26,17 @@ public class Game
     /// </summary>
     private event ScoreUpdatedEventHandler? ScoreUpdated;
 
+    private GamePlayTimer _timer;
+    // private event GamePlayTimerUpdatedEventHandler? GamePlayTimerUpdated;
+
+    // private readonly Stopwatch _gamePlayTimer = new();
+    // private readonly System.Timers.Timer _timer = new(1000);
+
+
     public Game(int width, int height)
     {
+        _timer = new GamePlayTimer(1000);
+
         // The order of operations is important here.
         // Grid has to be created first, obviously
         _grid = new(width, height);
@@ -37,7 +48,7 @@ public class Game
 
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
-        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated);
+        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated, ref _timer);
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
@@ -56,6 +67,7 @@ public class Game
         _input = new();
 
         SetScore(0);
+        _timer.Reset();
     }
 
     /// <summary>
@@ -65,6 +77,7 @@ public class Game
     public void Play()
     {
         _state = GameState.Playing;
+        _timer.Start();
         while (_state != GameState.Ended)
         {
             Thread.Sleep(_delay);
@@ -92,8 +105,16 @@ public class Game
     /// </summary>
     private void HandleTogglePause()
     {
-        if (_state == GameState.Playing) _state = GameState.Paused;
-        else if (_state == GameState.Paused) _state = GameState.Playing;
+        if (_state == GameState.Playing)
+        {
+            _state = GameState.Paused;
+            _timer.Stop();
+        }
+        else if (_state == GameState.Paused)
+        {
+            _state = GameState.Playing;
+            _timer.Start();
+        }
     }
 
     /// <summary>
@@ -125,6 +146,7 @@ public class Game
 
         if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition))
         {
+            _timer.Start();
             _state = GameState.Ended;
             return;
         }
