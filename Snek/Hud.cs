@@ -57,36 +57,42 @@ public class Hud : StyledObject, IGrid
                 _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
 
         _scoreTextBox = new TextBox(new Position(1, 1), Alignment.Left, BackgroundColor, SpriteColor, "Score");
-        _gamePlayTimerTextBox = new TextBox(new Position(1, 2), Alignment.Left, BackgroundColor, SpriteColor, "Time");
+        _gamePlayTimerTextBox = new TextBox(new Position(1, 1), Alignment.Right, BackgroundColor, SpriteColor, "Time");
     }
 
     private void GamePlayTimerUpdated(object? sender, GamePlayTimerUpdatedEventArgs e)
-    {
-        _gamePlayTimerTextBox.SetValue(((int)e.Elapsed.TotalSeconds).ToString() + "s");
-
-        var y = _gamePlayTimerTextBox.Anchor.Y;
-        for (int i = 0; i < _gamePlayTimerTextBox.Content.Length; i++)
-        {
-            var sprite = _gamePlayTimerTextBox.Content.ElementAt(i);
-            var x = _gamePlayTimerTextBox.Anchor.X + i;
-            var cell = new Cell(x, y, _gamePlayTimerTextBox.BackgroundColor, _gamePlayTimerTextBox.ForegroundColor, sprite);
-            _cells[(x, y)] = cell;
-            CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
-        }
-    }
+        => OnTextBoxUpdated(_gamePlayTimerTextBox, Math.Round(e.Elapsed.TotalSeconds, 0).ToString() + "s");
 
     public void OnGameScoreUpdated(object? sender, ScoreUpdatedEventArgs e)
-    {
-        _scoreTextBox.SetValue(e.Score.ToString());
+        => OnTextBoxUpdated(_scoreTextBox, e.Score.ToString());
 
-        var y = _scoreTextBox.Anchor.Y;
-        for (int i = 0; i < _scoreTextBox.Content.Length; i++)
+    private void OnTextBoxUpdated(TextBox textBox, string value)
+    {
+        textBox.SetValue(value);
+
+        foreach (var cell in GetTextBoxContentCells(textBox))
         {
-            var sprite = _scoreTextBox.Content.ElementAt(i);
-            var x = _scoreTextBox.Anchor.X + i;
-            var cell = new Cell(x, y, _scoreTextBox.BackgroundColor, _scoreTextBox.ForegroundColor, sprite);
-            _cells[(x, y)] = cell;
+            _cells[(cell.Position.X, cell.Position.Y)] = cell;
             CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
         }
     }
+
+    private IEnumerable<Cell> GetTextBoxContentCells(TextBox textBox)
+    {
+        var y = textBox.Anchor.Y;
+        for (int i = 0; i < textBox.Content.Length; i++)
+        {
+            var sprite = textBox.Content.ElementAt(i);
+            var x = GetXPositionForValueAtIndex(textBox, i);
+            yield return new Cell(x, y, textBox.BackgroundColor, textBox.ForegroundColor, sprite);
+        }
+    }
+
+    private int GetXPositionForValueAtIndex(TextBox textBox, int index)
+        => textBox.Align switch
+        {
+            Alignment.Left => textBox.Anchor.X + index,
+            Alignment.Right => Width - textBox.Anchor.X - textBox.Content.Length + index,
+            _ => (Width / 2) - (textBox.Content.Length / 2) + index
+        };
 }
