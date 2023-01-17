@@ -4,6 +4,8 @@ namespace Snek.Interfaces;
 
 public interface IGrid
 {
+    int Width { get; }
+    int Height { get; }
     List<Cell> Cells { get; }
 
     /// <summary>

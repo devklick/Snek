@@ -38,9 +38,15 @@ public class Display
     /// </summary>
     private readonly GameGrid _gameGrid;
 
+    /// <summary>
+    /// The HUD where game info is presented.
+    /// </summary>
     private readonly Hud _hud;
 
-    private readonly object _locker = new();
+    /// <summary>
+    /// A simple object intended to be used for locking the <see cref="Draw(Cell, Position?, bool)"/> method.
+    /// </summary>
+    private readonly object drawLock = new();
 
     /// <summary>
     /// Constructs the display and initializes the console by drawing the grid.
@@ -70,9 +76,11 @@ public class Display
     /// Draws the specified <paramref name="cell"/> to the console.
     /// </summary>
     /// <param name="cell">The data to be drawn</param>
+    /// <param name="anchor">The position that the cell should be drawn relative to. Defaults to `0,0`</param>
+    /// <param name="disableMultipliers">Whether or not multiplication (or rather repetition) of cells should be disabled.</param>
     public void Draw(Cell cell, Position? anchor = null, bool disableMultipliers = false)
     {
-        lock (_locker)
+        lock (drawLock)
         {
             anchor ??= Position.Default;
             var _bgCopy = Console.BackgroundColor;
@@ -104,15 +112,14 @@ public class Display
     /// <summary>
     /// Handles cells that have been updated on the grid, drawing them to the console.
     /// </summary>
-    private void OnGameGridCellUpdated(object sender, CellUpdatedEventArgs e)
-    {
-        Draw(e.Cell, null, e.PreserveExact);
-    }
+    private void OnGameGridCellUpdated(object? sender, CellUpdatedEventArgs e)
+        => Draw(e.Cell, null, e.PreserveExact);
 
-    private void OnHudCellUpdated(object sender, CellUpdatedEventArgs e)
-    {
-        Draw(e.Cell, _hud.Anchor, e.PreserveExact);
-    }
+    /// <summary>
+    /// Handles cells on the HUD that have been updated, drawing them to the console.
+    /// </summary>
+    private void OnHudCellUpdated(object? sender, CellUpdatedEventArgs e)
+        => Draw(e.Cell, _hud.Anchor, e.PreserveExact);
 
     /// <summary>
     /// Initializes the console dimensions, if possible. 

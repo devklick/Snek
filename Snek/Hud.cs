@@ -80,8 +80,7 @@ public class Hud : StyledObject, IGrid
         {
             foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
             {
-                _cells[(cell.Position.X, cell.Position.Y)] = cell;
-                CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
+                UpdateCell(cell);
             }
         }
 
@@ -89,9 +88,14 @@ public class Hud : StyledObject, IGrid
 
         foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
         {
-            _cells[(cell.Position.X, cell.Position.Y)] = cell;
-            CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
+            UpdateCell(cell);
         }
+    }
+
+    private void UpdateCell(Cell cell)
+    {
+        _cells[(cell.Position.X, cell.Position.Y)] = cell;
+        CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
     }
 
     private IEnumerable<Cell> GetTextBoxContentAsCells(Position anchor, Alignment align, string content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)

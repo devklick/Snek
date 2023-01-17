@@ -12,27 +12,23 @@ public class Game
 {
     private readonly GameGrid _grid;
     private readonly Player _player;
-    private Enemy _enemy;
     private readonly Display _display;
     private readonly Hud _hud;
     private readonly InputManager _input;
+    private readonly GamePlayTimer _timer;
+    private Enemy _enemy;
     private GameState _state;
     private int _ticksPerSecond = 3;
-    private int _delay => (int)((float)1 / _ticksPerSecond * 1000);
     private int _score = 0;
-
-    /// <summary>
-    /// The event that is fired whenever a <see cref="Cell"/> has been updated.
-    /// </summary>
     private event ScoreUpdatedEventHandler? ScoreUpdated;
-
-    private GamePlayTimer _timer;
-
     private event GameStateUpdatedEventHandler? GameStateUpdated;
+    private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
+
 
 
     public Game(int width, int height)
     {
+        // Set up the game timer to tick every 1 second
         _timer = new GamePlayTimer(1000);
 
         // The order of operations is important here.
@@ -46,15 +42,19 @@ public class Game
 
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
+        // The idea of passing in event's as references isnt great, but it gets the job done.
         _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
 
-        GameStateUpdated?.Invoke(this, new(_state));
+        // Since we've got the display configured and rendered, we can trigger the update of the various info that gets drawn to the HUD.
+        SetGameState(GameState.Initializing);
+        SetScore(0);
+        _timer.Reset();
 
         // Next, the player needs to be created an added to the grid.
-        // Doing so will update the display with the player cells 
+        // Doing so will update the display with the player cells.
         _player = new(new Position(width / 2, height / 2));
         _grid.Add(_player);
 
@@ -65,9 +65,6 @@ public class Game
 
         // The instantiation order of the input manager isnt really important.
         _input = new();
-
-        SetScore(0);
-        _timer.Reset();
     }
 
     /// <summary>
@@ -76,12 +73,10 @@ public class Game
     /// </summary>
     public void Play()
     {
-        _state = GameState.Playing;
-        _timer.Start();
-        GameStateUpdated?.Invoke(this, new(_state));
+        SetGameState(GameState.Playing);
         while (_state != GameState.GameOver)
         {
-            Thread.Sleep(_delay);
+            Thread.Sleep(Delay);
 
             var input = _input.GetInput();
 
@@ -108,15 +103,11 @@ public class Game
     {
         if (_state == GameState.Playing)
         {
-            _state = GameState.Paused;
-            GameStateUpdated?.Invoke(this, new(_state));
-            _timer.Stop();
+            SetGameState(GameState.Paused);
         }
         else if (_state == GameState.Paused)
         {
-            _state = GameState.Playing;
-            GameStateUpdated?.Invoke(this, new(_state));
-            _timer.Start();
+            SetGameState(GameState.Playing);
         }
     }
 
@@ -149,9 +140,7 @@ public class Game
 
         if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition))
         {
-            _timer.Start();
-            _state = GameState.GameOver;
-            GameStateUpdated?.Invoke(this, new(_state));
+            SetGameState(GameState.GameOver);
             return;
         }
 
@@ -182,9 +171,33 @@ public class Game
         _ticksPerSecond++;
     }
 
+    /// <summary>
+    /// Sets the current score, firing an update event.
+    /// </summary>
+    /// <param name="score">The new score value</param>
     private void SetScore(int score)
     {
         _score = score;
         ScoreUpdated?.Invoke(this, new ScoreUpdatedEventArgs(score));
+    }
+
+    /// <summary>
+    /// Sets the game state, taking care of starting/stopping the timer and firing an update event.
+    /// </summary>
+    /// <param name="state">The new game state</param>
+    private void SetGameState(GameState state)
+    {
+        switch (state)
+        {
+            case GameState.GameOver:
+            case GameState.Paused:
+                _timer.Stop();
+                break;
+            case GameState.Playing:
+                _timer.Start();
+                break;
+        }
+        _state = state;
+        GameStateUpdated?.Invoke(this, new(_state));
     }
 }
