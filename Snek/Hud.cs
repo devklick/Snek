@@ -1,4 +1,4 @@
-using System.Timers;
+using Snek.Extensions;
 using Snek.Abstract;
 using Snek.Events;
 using Snek.Interfaces;
@@ -37,12 +37,14 @@ public class Hud : StyledObject, IGrid
     private readonly Dictionary<(int x, int y), Cell> _cells = new();
     private readonly TextBox _scoreTextBox;
     private readonly TextBox _gamePlayTimerTextBox;
+    private readonly TextBox _gameStateTextBox;
 
     public event CellUpdatedEventHandler? CellUpdated;
 
     public Hud(int width, int height, Position anchor,
         ref ScoreUpdatedEventHandler? scoreUpdatedEventHandler,
-        ref GamePlayTimer gamePlayTimer)
+        ref GamePlayTimer gamePlayTimer,
+        ref GameStateUpdatedEventHandler? gameStateUpdatedEventHandler)
     {
         Width = width;
         Height = height;
@@ -51,48 +53,63 @@ public class Hud : StyledObject, IGrid
         SpriteColor = ConsoleColor.Black;
         scoreUpdatedEventHandler += OnGameScoreUpdated;
         gamePlayTimer.Updated += GamePlayTimerUpdated;
+        gameStateUpdatedEventHandler += OnGameStateUpdated;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
 
-        _scoreTextBox = new TextBox(new Position(1, 1), Alignment.Left, BackgroundColor, SpriteColor, "Score");
-        _gamePlayTimerTextBox = new TextBox(new Position(1, 1), Alignment.Right, BackgroundColor, SpriteColor, "Time");
+        _scoreTextBox = new TextBox(new Position(2, 3), Alignment.Left, BackgroundColor, SpriteColor, "Score");
+        _gamePlayTimerTextBox = new TextBox(new Position(2, 3), Alignment.Right, BackgroundColor, SpriteColor, "Time");
+        _gameStateTextBox = new TextBox(new Position(0, 1), Alignment.Centre, BackgroundColor, SpriteColor, "State");
     }
 
     private void GamePlayTimerUpdated(object? sender, GamePlayTimerUpdatedEventArgs e)
-        => OnTextBoxUpdated(_gamePlayTimerTextBox, Math.Round(e.Elapsed.TotalSeconds, 0).ToString() + "s");
+        => UpdateTextBox(_gamePlayTimerTextBox, Math.Round(e.Elapsed.TotalSeconds, 0).ToString() + "s");
 
-    public void OnGameScoreUpdated(object? sender, ScoreUpdatedEventArgs e)
-        => OnTextBoxUpdated(_scoreTextBox, e.Score.ToString());
+    private void OnGameScoreUpdated(object? sender, ScoreUpdatedEventArgs e)
+        => UpdateTextBox(_scoreTextBox, e.Score.ToString());
 
-    private void OnTextBoxUpdated(TextBox textBox, string value)
+    private void OnGameStateUpdated(object? sender, GameStateUpdatedEventArgs e)
+        => UpdateTextBox(_gameStateTextBox, e.State.ToString().ToSentenceCase());
+
+    private void UpdateTextBox(TextBox textBox, string value)
     {
+        // if the current value is longer than the new value, we need to "reset" the cells that the new value will not overwrite.
+        if (textBox.Value != null && textBox.Value.Length > value.Length)
+        {
+            foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
+            {
+                _cells[(cell.Position.X, cell.Position.Y)] = cell;
+                CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
+            }
+        }
+
         textBox.SetValue(value);
 
-        foreach (var cell in GetTextBoxContentCells(textBox))
+        foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
         {
             _cells[(cell.Position.X, cell.Position.Y)] = cell;
             CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
         }
     }
 
-    private IEnumerable<Cell> GetTextBoxContentCells(TextBox textBox)
+    private IEnumerable<Cell> GetTextBoxContentAsCells(Position anchor, Alignment align, string content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
     {
-        var y = textBox.Anchor.Y;
-        for (int i = 0; i < textBox.Content.Length; i++)
+        var y = anchor.Y;
+        for (int i = 0; i < content.Length; i++)
         {
-            var sprite = textBox.Content.ElementAt(i);
-            var x = GetXPositionForValueAtIndex(textBox, i);
-            yield return new Cell(x, y, textBox.BackgroundColor, textBox.ForegroundColor, sprite);
+            var spriteToUse = sprite ?? content.ElementAt(i);
+            var x = GetXPositionForValueAtIndex(anchor, align, content, i);
+            yield return new Cell(x, y, backgroundColor, foregroundColor, spriteToUse);
         }
     }
 
-    private int GetXPositionForValueAtIndex(TextBox textBox, int index)
-        => textBox.Align switch
+    private int GetXPositionForValueAtIndex(Position anchor, Alignment align, string content, int index)
+        => align switch
         {
-            Alignment.Left => textBox.Anchor.X + index,
-            Alignment.Right => Width - textBox.Anchor.X - textBox.Content.Length + index,
-            _ => (Width / 2) - (textBox.Content.Length / 2) + index
+            Alignment.Left => anchor.X + index,
+            Alignment.Right => Width - anchor.X - content.Length + index,
+            _ => (Width / 2) - (content.Length / 2) + index
         };
 }

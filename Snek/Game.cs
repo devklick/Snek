@@ -27,10 +27,8 @@ public class Game
     private event ScoreUpdatedEventHandler? ScoreUpdated;
 
     private GamePlayTimer _timer;
-    // private event GamePlayTimerUpdatedEventHandler? GamePlayTimerUpdated;
 
-    // private readonly Stopwatch _gamePlayTimer = new();
-    // private readonly System.Timers.Timer _timer = new(1000);
+    private event GameStateUpdatedEventHandler? GameStateUpdated;
 
 
     public Game(int width, int height)
@@ -48,10 +46,12 @@ public class Game
 
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
-        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated, ref _timer);
+        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
+
+        GameStateUpdated?.Invoke(this, new(_state));
 
         // Next, the player needs to be created an added to the grid.
         // Doing so will update the display with the player cells 
@@ -78,7 +78,8 @@ public class Game
     {
         _state = GameState.Playing;
         _timer.Start();
-        while (_state != GameState.Ended)
+        GameStateUpdated?.Invoke(this, new(_state));
+        while (_state != GameState.GameOver)
         {
             Thread.Sleep(_delay);
 
@@ -108,11 +109,13 @@ public class Game
         if (_state == GameState.Playing)
         {
             _state = GameState.Paused;
+            GameStateUpdated?.Invoke(this, new(_state));
             _timer.Stop();
         }
         else if (_state == GameState.Paused)
         {
             _state = GameState.Playing;
+            GameStateUpdated?.Invoke(this, new(_state));
             _timer.Start();
         }
     }
@@ -147,7 +150,8 @@ public class Game
         if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition))
         {
             _timer.Start();
-            _state = GameState.Ended;
+            _state = GameState.GameOver;
+            GameStateUpdated?.Invoke(this, new(_state));
             return;
         }
 

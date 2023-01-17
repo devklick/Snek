@@ -4,7 +4,7 @@ public class TextBox
 {
     public ConsoleColor BackgroundColor { get; }
     public ConsoleColor ForegroundColor { get; }
-    public string Content => $"{_label}: {_value}";
+    public string Content => $"{Label}: {Value}";
     /// <summary>
     /// The position relative to the parent object that this text box will be drawn.
     /// </summary>
@@ -16,8 +16,8 @@ public class TextBox
     /// </remarks>
     public Position Anchor { get; }
     public Alignment Align { get; }
-    private string? _value;
-    private readonly string _label;
+    public string? Value { get; set; }
+    public string Label { get; }
 
     public TextBox(Position anchor, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string label, string? value = null)
     {
@@ -25,12 +25,12 @@ public class TextBox
         BackgroundColor = backgroundColor;
         ForegroundColor = foregroundColor;
         Align = align;
-        _label = label;
-        _value = value;
+        Label = label;
+        Value = value;
     }
 
     public void SetValue(string value)
     {
-        _value = value;
+        Value = value;
     }
 }
