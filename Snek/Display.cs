@@ -1,4 +1,4 @@
-using static Snek.Grid;
+using Snek.Events;
 
 namespace Snek;
 
@@ -36,64 +36,90 @@ public class Display
     /// <summary>
     /// The grid that sits behind the display.
     /// </summary>
-    private readonly Grid _grid;
+    private readonly GameGrid _gameGrid;
+
+    /// <summary>
+    /// The HUD where game info is presented.
+    /// </summary>
+    private readonly Hud _hud;
+
+    /// <summary>
+    /// A simple object intended to be used for locking the <see cref="Draw(Cell, Position?, bool)"/> method.
+    /// </summary>
+    private readonly object drawLock = new();
 
     /// <summary>
     /// Constructs the display and initializes the console by drawing the grid.
     /// </summary>
-    /// <param name="grid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
+    /// <param name="gameGrid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
     /// <param name="widthMultiplier">The number of times to repeat a cell along the `X` axis when drawing it to the display.</param>
     /// <param name="heightMultiplier">The number of times to repeat a cell along the `Y` axis when drawing it to the display.</param>
-    public Display(Grid grid, int widthMultiplier, int heightMultiplier)
+    public Display(GameGrid gameGrid, Hud hud, int widthMultiplier, int heightMultiplier)
     {
-        _grid = grid;
+        _gameGrid = gameGrid;
+        _hud = hud;
         _widthMultiplier = widthMultiplier;
         _heightMultiplier = heightMultiplier;
-        _width = _grid.Width * _widthMultiplier;
-        _height = _grid.Height * _heightMultiplier;
+        _width = _gameGrid.Width * _widthMultiplier;
+        _height = _gameGrid.Height * _heightMultiplier + hud.Height * _heightMultiplier;
 
         InitializeConsole();
 
-        foreach (var cell in _grid.Cells) Draw(cell);
+        foreach (var cell in _gameGrid.Cells) Draw(cell);
+        foreach (var cell in hud.Cells) Draw(cell, hud.Anchor, true);
 
-        _grid.CellUpdated += OnCellUpdated;
+        _gameGrid.CellUpdated += OnGameGridCellUpdated;
+        _hud.CellUpdated += OnHudCellUpdated;
     }
 
     /// <summary>
     /// Draws the specified <paramref name="cell"/> to the console.
     /// </summary>
     /// <param name="cell">The data to be drawn</param>
-    public void Draw(Cell cell)
+    /// <param name="anchor">The position that the cell should be drawn relative to. Defaults to `0,0`</param>
+    /// <param name="disableMultipliers">Whether or not multiplication (or rather repetition) of cells should be disabled.</param>
+    public void Draw(Cell cell, Position? anchor = null, bool disableMultipliers = false)
     {
-        var _bgCopy = Console.BackgroundColor;
-        var _fgCopy = Console.ForegroundColor;
-
-        Console.BackgroundColor = cell.BackgroundColor;
-        Console.ForegroundColor = cell.SpriteColor;
-
-        // the grid cell may take up more than one display cell. 
-        for (int r = 0; r < _heightMultiplier; r++)
+        lock (drawLock)
         {
-            for (int c = 0; c < _widthMultiplier; c++)
-            {
-                var x = (cell.Position.X * _widthMultiplier) + c;
-                var y = (cell.Position.Y * _heightMultiplier) + r;
-                Console.SetCursorPosition(x, y);
-                Console.Write(cell.Sprite);
-            }
-        }
+            anchor ??= Position.Default;
+            var _bgCopy = Console.BackgroundColor;
+            var _fgCopy = Console.ForegroundColor;
 
-        Console.BackgroundColor = _bgCopy;
-        Console.ForegroundColor = _fgCopy;
+            Console.BackgroundColor = cell.BackgroundColor;
+            Console.ForegroundColor = cell.SpriteColor;
+
+            var heightMultiplier = disableMultipliers ? 1 : _heightMultiplier;
+            var widthMultiplier = disableMultipliers ? 1 : _widthMultiplier;
+
+            // the grid cell may take up more than one display cell. 
+            for (int r = 0; r < heightMultiplier; r++)
+            {
+                for (int c = 0; c < widthMultiplier; c++)
+                {
+                    var x = (cell.Position.X * widthMultiplier) + c + anchor.Value.X;
+                    var y = (cell.Position.Y * heightMultiplier) + r + anchor.Value.Y;
+                    Console.SetCursorPosition(x, y);
+                    Console.Write(cell.Sprite);
+                }
+            }
+
+            Console.BackgroundColor = _bgCopy;
+            Console.ForegroundColor = _fgCopy;
+        }
     }
 
     /// <summary>
     /// Handles cells that have been updated on the grid, drawing them to the console.
     /// </summary>
-    public void OnCellUpdated(object sender, CellUpdatedEventArgs e)
-    {
-        Draw(e.Cell);
-    }
+    private void OnGameGridCellUpdated(object? sender, CellUpdatedEventArgs e)
+        => Draw(e.Cell, null, e.PreserveExact);
+
+    /// <summary>
+    /// Handles cells on the HUD that have been updated, drawing them to the console.
+    /// </summary>
+    private void OnHudCellUpdated(object? sender, CellUpdatedEventArgs e)
+        => Draw(e.Cell, _hud.Anchor, e.PreserveExact);
 
     /// <summary>
     /// Initializes the console dimensions, if possible. 
@@ -117,8 +143,11 @@ public class Display
     {
         // In Windows OS, we can control the size of the terminal at runtime, 
         // so lets set the dimensions based on the size of the game.
-        Console.SetWindowSize(_width, _height);
-        Console.SetBufferSize(_width, _height);
+
+        // We add 1 to the buffer and window height to accommodate for overflow.
+        // TODO: Verify this works (run on windows)
+        Console.SetWindowSize(_width, _height + 1);
+        Console.SetBufferSize(_width, _height + 1);
     }
 
     private void InitializeNonWindowsConsole()

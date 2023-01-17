@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Timers;
+using Snek.Events;
 using Snek.Extensions;
 
 namespace Snek;
@@ -7,27 +10,51 @@ namespace Snek;
 /// </summary>
 public class Game
 {
-    private readonly Grid _grid;
+    private readonly GameGrid _grid;
     private readonly Player _player;
-    private Enemy _enemy;
     private readonly Display _display;
+    private readonly Hud _hud;
     private readonly InputManager _input;
+    private readonly GamePlayTimer _timer;
+    private Enemy _enemy;
     private GameState _state;
     private int _ticksPerSecond = 3;
-    private int _delay => (int)((float)1 / _ticksPerSecond * 1000);
     private int _score = 0;
+    private event ScoreUpdatedEventHandler? ScoreUpdated;
+    private event GameStateUpdatedEventHandler? GameStateUpdated;
+    private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
+
+
 
     public Game(int width, int height)
     {
+        // Set up the game timer to tick every 1 second
+        _timer = new GamePlayTimer(1000);
+
         // The order of operations is important here.
         // Grid has to be created first, obviously
         _grid = new(width, height);
 
+        // Multipliers are used for presenting information to the display. 
+        // Since each cell on basic console is around twice as tall as it is wide, 
+        // but we want to make each cell seem more square than rectangular, we apply multipliers.
+        int displayWidthMultiplier = 2, displayHeightMultiplier = 1;
+
+        // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
+        // However we want it's width to the the same as the multiplied grid dimensions.
+        // The idea of passing in event's as references isnt great, but it gets the job done.
+        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated, ref _timer, ref GameStateUpdated);
+
         // Next, the display needs to be created, so it knows about and draws the grid
-        _display = new(_grid, 2, 1);
+        _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
+
+        // Since we've got the display configured and rendered, we can trigger the update of the various info that gets drawn to the HUD.
+        SetGameState(GameState.Initializing);
+        SetScore(0);
+        _timer.Reset();
 
         // Next, the player needs to be created an added to the grid.
-        // Doing so will update the display with the player cells 
+        // Doing so will update the display with the player cells.
         _player = new(new Position(width / 2, height / 2));
         _grid.Add(_player);
 
@@ -36,7 +63,7 @@ public class Game
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
 
-        // The order of the input manager isnt really important.
+        // The instantiation order of the input manager isnt really important.
         _input = new();
     }
 
@@ -46,10 +73,10 @@ public class Game
     /// </summary>
     public void Play()
     {
-        _state = GameState.Playing;
-        while (_state != GameState.Ended)
+        SetGameState(GameState.Playing);
+        while (_state != GameState.GameOver)
         {
-            Thread.Sleep(_delay);
+            Thread.Sleep(Delay);
 
             var input = _input.GetInput();
 
@@ -74,8 +101,14 @@ public class Game
     /// </summary>
     private void HandleTogglePause()
     {
-        if (_state == GameState.Playing) _state = GameState.Paused;
-        else if (_state == GameState.Paused) _state = GameState.Playing;
+        if (_state == GameState.Playing)
+        {
+            SetGameState(GameState.Paused);
+        }
+        else if (_state == GameState.Paused)
+        {
+            SetGameState(GameState.Playing);
+        }
     }
 
     /// <summary>
@@ -107,7 +140,7 @@ public class Game
 
         if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition))
         {
-            _state = GameState.Ended;
+            SetGameState(GameState.GameOver);
             return;
         }
 
@@ -133,7 +166,38 @@ public class Game
         _grid.ExtendPlayerTail();
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
-        _score++;
+
+        SetScore(_score + 1);
         _ticksPerSecond++;
+    }
+
+    /// <summary>
+    /// Sets the current score, firing an update event.
+    /// </summary>
+    /// <param name="score">The new score value</param>
+    private void SetScore(int score)
+    {
+        _score = score;
+        ScoreUpdated?.Invoke(this, new ScoreUpdatedEventArgs(score));
+    }
+
+    /// <summary>
+    /// Sets the game state, taking care of starting/stopping the timer and firing an update event.
+    /// </summary>
+    /// <param name="state">The new game state</param>
+    private void SetGameState(GameState state)
+    {
+        switch (state)
+        {
+            case GameState.GameOver:
+            case GameState.Paused:
+                _timer.Stop();
+                break;
+            case GameState.Playing:
+                _timer.Start();
+                break;
+        }
+        _state = state;
+        GameStateUpdated?.Invoke(this, new(_state));
     }
 }
