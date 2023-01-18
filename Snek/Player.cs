@@ -42,6 +42,6 @@ public class Player : StyledObject
         _ => throw new Exception(),
     };
 
-    public bool IsOccupyingPosition(Position position)
-        => Cells.Any(c => c.Position == position);
+    public bool CollidedWithSelf()
+        => Cells.Count != Cells.Select(c => c.Position).Distinct().Count();
 }

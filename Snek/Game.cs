@@ -138,13 +138,19 @@ public class Game
     {
         var nextHeadPosition = _player.NextHeadPosition();
 
-        if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition))
+        if (!_grid.IsInBounds(nextHeadPosition))
         {
             SetGameState(GameState.GameOver);
             return;
         }
 
         _grid.MovePlayer(nextHeadPosition);
+
+        if (_player.CollidedWithSelf())
+        {
+            SetGameState(GameState.GameOver);
+            return;
+        }
 
         if (EnemyDestroyed())
         {
