@@ -35,17 +35,21 @@ public class Hud : StyledObject, IGrid
     public override char Sprite => ' ';
 
     private readonly Dictionary<(int x, int y), Cell> _cells = new();
+    private readonly InputManager _input;
     private readonly TextBox _scoreTextBox;
     private readonly TextBox _gamePlayTimerTextBox;
     private readonly TextBox _gameStateTextBox;
 
     public event CellUpdatedEventHandler? CellUpdated;
 
-    public Hud(int width, int height, Position anchor,
+    public Hud(int width, int height,
+        Position anchor,
+        InputManager input,
         ref ScoreUpdatedEventHandler? scoreUpdatedEventHandler,
         ref GamePlayTimer gamePlayTimer,
         ref GameStateUpdatedEventHandler? gameStateUpdatedEventHandler)
     {
+        _input = input;
         Width = width;
         Height = height;
         Anchor = anchor;
@@ -55,14 +59,14 @@ public class Hud : StyledObject, IGrid
         gamePlayTimer.Updated += GamePlayTimerUpdated;
         gameStateUpdatedEventHandler += OnGameStateUpdated;
 
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
+        BuildHudCells();
 
         _scoreTextBox = new TextBox(new Position(2, 3), Alignment.Left, BackgroundColor, SpriteColor, "Score");
         _gamePlayTimerTextBox = new TextBox(new Position(2, 3), Alignment.Right, BackgroundColor, SpriteColor, "Time");
-        _gameStateTextBox = new TextBox(new Position(0, 1), Alignment.Centre, BackgroundColor, SpriteColor, "State");
+        _gameStateTextBox = new TextBox(new Position(0, 1), Alignment.Centre, BackgroundColor, SpriteColor);
     }
+
+    public void Reset() => BuildHudCells();
 
     private void GamePlayTimerUpdated(object? sender, GamePlayTimerUpdatedEventArgs e)
         => UpdateTextBox(_gamePlayTimerTextBox, Math.Round(e.Elapsed.TotalSeconds, 0).ToString() + "s");
@@ -71,7 +75,18 @@ public class Hud : StyledObject, IGrid
         => UpdateTextBox(_scoreTextBox, e.Score.ToString());
 
     private void OnGameStateUpdated(object? sender, GameStateUpdatedEventArgs e)
-        => UpdateTextBox(_gameStateTextBox, e.State.ToString().ToSentenceCase());
+    {
+        var message = e.State.ToString().ToSentenceCase();
+        if (e.State == GameState.GameOver)
+        {
+            var mapping = _input.GetMappingForInput(PlayerInput.Replay);
+            if (mapping.Any())
+            {
+                message += $" - Replay? ({mapping.First().Key.ToString().ToLower()})";
+            }
+        }
+        UpdateTextBox(_gameStateTextBox, message);
+    }
 
     private void UpdateTextBox(TextBox textBox, string value)
     {
@@ -98,8 +113,9 @@ public class Hud : StyledObject, IGrid
         CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
     }
 
-    private IEnumerable<Cell> GetTextBoxContentAsCells(Position anchor, Alignment align, string content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
+    private IEnumerable<Cell> GetTextBoxContentAsCells(Position anchor, Alignment align, string? content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
     {
+        if (content == null) yield break;
         var y = anchor.Y;
         for (int i = 0; i < content.Length; i++)
         {
@@ -116,4 +132,12 @@ public class Hud : StyledObject, IGrid
             Alignment.Right => Width - anchor.X - content.Length + index,
             _ => (Width / 2) - (content.Length / 2) + index
         };
+
+    private void BuildHudCells()
+    {
+        _cells.Clear();
+        for (int x = 0; x < Width; x++)
+            for (int y = 0; y < Height; y++)
+                _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
+    }
 }

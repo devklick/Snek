@@ -11,29 +11,34 @@ namespace Snek;
 public class Game
 {
     private readonly GameGrid _grid;
-    private readonly Player _player;
+    private Player _player;
     private readonly Display _display;
     private readonly Hud _hud;
     private readonly InputManager _input;
     private readonly GamePlayTimer _timer;
     private Enemy _enemy;
     private GameState _state;
-    private int _ticksPerSecond = 3;
+    private const int DefaultTicksPerSecond = 3;
+    private int _ticksPerSecond = DefaultTicksPerSecond;
     private int _score = 0;
     private event ScoreUpdatedEventHandler? ScoreUpdated;
     private event GameStateUpdatedEventHandler? GameStateUpdated;
     private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
-
-
+    private readonly int _width;
+    private readonly int _height;
 
     public Game(int width, int height)
     {
+        _width = width;
+        _height = height;
         // Set up the game timer to tick every 1 second
         _timer = new GamePlayTimer(1000);
 
+        _input = new();
+
         // The order of operations is important here.
         // Grid has to be created first, obviously
-        _grid = new(width, height);
+        _grid = new(_width, _height);
 
         // Multipliers are used for presenting information to the display. 
         // Since each cell on basic console is around twice as tall as it is wide, 
@@ -43,7 +48,7 @@ public class Game
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
         // The idea of passing in event's as references isnt great, but it gets the job done.
-        _hud = new Hud(width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), ref ScoreUpdated, ref _timer, ref GameStateUpdated);
+        _hud = new Hud(_width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
@@ -55,16 +60,28 @@ public class Game
 
         // Next, the player needs to be created an added to the grid.
         // Doing so will update the display with the player cells.
-        _player = new(new Position(width / 2, height / 2));
+        _player = new(new Position(_width / 2, _height / 2));
         _grid.Add(_player);
 
         // Now we can check all available positions, determine where the enemy should be positioned,
         // And add the enemy to the grid. Doing so will update the display with the enemy cell.
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
+    }
 
-        // The instantiation order of the input manager isnt really important.
-        _input = new();
+    private void Reset()
+    {
+        _timer.Reset();
+        _grid.Reset();
+        _hud.Reset();
+        SetGameState(GameState.Initializing);
+        SetScore(0);
+        _timer.Reset();
+        _player = new(new Position(_width / 2, _height / 2));
+        _grid.Add(_player);
+        _enemy = new(_grid.GetRandomAvailablePosition());
+        _grid.Add(_enemy);
+        _ticksPerSecond = DefaultTicksPerSecond;
     }
 
     /// <summary>
@@ -73,12 +90,18 @@ public class Game
     /// </summary>
     public void Play()
     {
+        GameLoop();
+        ReplayLoop();
+    }
+
+    private void GameLoop()
+    {
         SetGameState(GameState.Playing);
         while (_state != GameState.GameOver)
         {
             Thread.Sleep(Delay);
 
-            var input = _input.GetInput();
+            var input = _input.GetInput(_state);
 
             if (input == PlayerInput.TogglePause)
             {
@@ -93,6 +116,25 @@ public class Game
             }
 
             Tick();
+        }
+    }
+
+    private void ReplayLoop()
+    {
+        while (_state == GameState.GameOver)
+        {
+            var input = _input.GetInput(_state);
+
+            if (input == PlayerInput.Replay)
+            {
+                SetGameState(GameState.Initializing);
+                Reset();
+                Play();
+            }
+            else if (input == PlayerInput.Quit)
+            {
+                _state = GameState.Exiting;
+            }
         }
     }
 

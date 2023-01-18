@@ -40,13 +40,7 @@ public class GameGrid : StyledObject, IGrid
         Width = width;
         Height = height;
 
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < width; y++)
-            {
-                var cell = CreateCell(new Position(x, y));
-                Cells.Add(cell);
-                OnCellUpdated(cell);
-            }
+        BuildGridCells();
     }
 
     public Position GetRandomAvailablePosition()
@@ -95,6 +89,8 @@ public class GameGrid : StyledObject, IGrid
         OnCellUpdated(cell);
     }
 
+    public void Reset() => BuildGridCells();
+
     /// <summary>
     /// Invokes the event that's fired when a cell has been updated.
     /// </summary>
@@ -102,5 +98,17 @@ public class GameGrid : StyledObject, IGrid
     protected virtual void OnCellUpdated(Cell cell)
     {
         CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell));
+    }
+
+    private void BuildGridCells()
+    {
+        Cells.Clear();
+        for (int x = 0; x < Width; x++)
+            for (int y = 0; y < Height; y++)
+            {
+                var cell = CreateCell(new Position(x, y));
+                Cells.Add(cell);
+                OnCellUpdated(cell);
+            }
     }
 }

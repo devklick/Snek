@@ -4,7 +4,7 @@ public class TextBox
 {
     public ConsoleColor BackgroundColor { get; }
     public ConsoleColor ForegroundColor { get; }
-    public string Content => $"{Label}: {Value}";
+    public string? Content => string.IsNullOrEmpty(Label) ? Value : $"{Label}: {Value}";
     /// <summary>
     /// The position relative to the parent object that this text box will be drawn.
     /// </summary>
@@ -17,9 +17,9 @@ public class TextBox
     public Position Anchor { get; }
     public Alignment Align { get; }
     public string? Value { get; set; }
-    public string Label { get; }
+    public string? Label { get; }
 
-    public TextBox(Position anchor, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string label, string? value = null)
+    public TextBox(Position anchor, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string? label = null, string? value = null)
     {
         Anchor = anchor;
         BackgroundColor = backgroundColor;
