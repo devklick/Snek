@@ -53,8 +53,8 @@ public class Hud : StyledObject, IGrid
         Width = width;
         Height = height;
         Anchor = anchor;
-        BackgroundColor = ConsoleColor.DarkBlue;
-        SpriteColor = ConsoleColor.Black;
+        BackgroundColor = ConsoleColor.DarkGray;
+        SpriteColor = ConsoleColor.White;
         scoreUpdatedEventHandler += OnGameScoreUpdated;
         gamePlayTimer.Updated += GamePlayTimerUpdated;
         gameStateUpdatedEventHandler += OnGameStateUpdated;
