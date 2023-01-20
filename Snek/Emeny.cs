@@ -17,6 +17,6 @@ public class Enemy : StyledObject
 
     public Enemy(Position position)
     {
-        Cell = new(position.X, position.Y, BackgroundColor, SpriteColor, Sprite);
+        Cell = new(position, BackgroundColor, SpriteColor, Sprite);
     }
 }

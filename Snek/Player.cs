@@ -19,7 +19,7 @@ public class Player : StyledObject
         Cells = new();
         for (var i = 0; i < initialLength; i++)
         {
-            Cells.Add(new Cell(position.X, position.Y + i, BackgroundColor, SpriteColor, Sprite));
+            Cells.Add(CreateCell(new Position(position.X, position.Y + i), flipColors: i == 0));
         }
         Facing = Direction.North;
     }
@@ -44,4 +44,14 @@ public class Player : StyledObject
 
     public bool CollidedWithSelf()
         => Cells.Count != Cells.Select(c => c.Position).Distinct().Count();
+
+    public bool IsOccupyingPosition(Position position, bool ignoreTail = true)
+        => Cells.Any(c => c.Position == position && (!ignoreTail || position != Tail.Position));
+
+    public Cell CreateCell(Position position, bool flipColors)
+    {
+        if (!flipColors) return base.CreateCell(position);
+
+        return new Cell(position, SpriteColor, BackgroundColor, Sprite);
+    }
 }

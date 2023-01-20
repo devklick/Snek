@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Timers;
 using Snek.Events;
 using Snek.Extensions;
 
@@ -180,19 +178,13 @@ public class Game
     {
         var nextHeadPosition = _player.NextHeadPosition();
 
-        if (!_grid.IsInBounds(nextHeadPosition))
+        if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition, true))
         {
             SetGameState(GameState.GameOver);
             return;
         }
 
         _grid.MovePlayer(nextHeadPosition);
-
-        if (_player.CollidedWithSelf())
-        {
-            SetGameState(GameState.GameOver);
-            return;
-        }
 
         if (EnemyDestroyed())
         {
