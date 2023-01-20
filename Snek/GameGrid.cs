@@ -30,9 +30,9 @@ public class GameGrid : StyledObject, IGrid
     /// </summary>
     public event CellUpdatedEventHandler? CellUpdated;
 
-    private IEnumerable<Position> AvailablePositions => Cells
+    public IEnumerable<Position> AvailablePositions => Cells
         .Where(cell => (_enemy == null || cell.Position != _enemy.Cell.Position)
-            && (!_player?.Cells?.Any(playerCell => playerCell.Position == cell.Position) ?? true))
+            && (_player == null || !_player.Cells.Any(playerCell => playerCell.Position == cell.Position)))
         .Select(cell => cell.Position);
 
     public GameGrid(int width, int height)
@@ -61,7 +61,7 @@ public class GameGrid : StyledObject, IGrid
     public bool IsInBounds(Position position)
         => position.X >= 0 && position.X < Width && position.Y >= 0 && position.Y < Height;
 
-    public void MovePlayer(Position nextHeadPosition)
+    public Position MovePlayer(Position nextHeadPosition)
     {
         ArgumentNullException.ThrowIfNull(_player);
 
@@ -85,15 +85,17 @@ public class GameGrid : StyledObject, IGrid
         OnCellUpdated(oldTailCell);
         OnCellUpdated(oldHeadCell);
         OnCellUpdated(newHeadCell);
+
+        return oldTailCell.Position;
     }
 
     /// <summary>
     /// Adds an extra cell to the end of the player.
     /// </summary>
-    public void ExtendPlayerTail()
+    public void ExtendPlayerTail(Position position)
     {
         ArgumentNullException.ThrowIfNull(_player);
-        var cell = _player.CreateCell(_player.Tail.Position);
+        var cell = _player.CreateCell(position);
         _player.Cells.Add(cell);
         OnCellUpdated(cell);
     }

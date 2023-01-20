@@ -184,11 +184,11 @@ public class Game
             return;
         }
 
-        _grid.MovePlayer(nextHeadPosition);
+        var oldTailPosition = _grid.MovePlayer(nextHeadPosition);
 
         if (EnemyDestroyed())
         {
-            HandleEnemyDestroyed();
+            HandleEnemyDestroyed(oldTailPosition);
         }
     }
 
@@ -201,9 +201,10 @@ public class Game
     /// <summary>
     /// Handles the functionality that needs to be executed when the player destroys an enemy.
     /// </summary>
-    private void HandleEnemyDestroyed()
+    private void HandleEnemyDestroyed(Position oldTailPosition)
     {
-        _grid.ExtendPlayerTail();
+        _grid.ExtendPlayerTail(oldTailPosition);
+
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
 
