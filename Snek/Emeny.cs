@@ -11,9 +11,9 @@ public class Enemy : StyledObject
     /// The cell on the grid that he enemy occupies.
     /// </summary>
     public Cell Cell { get; }
-    public override ConsoleColor BackgroundColor => ConsoleColor.Cyan;
-    public override ConsoleColor SpriteColor => ConsoleColor.DarkCyan;
-    public override char Sprite => '#';
+    public override ConsoleColor BackgroundColor => ConsoleColor.DarkGreen;
+    public override ConsoleColor SpriteColor => ConsoleColor.Green;
+    public override char Sprite => 'Ж';
 
     public Enemy(Position position)
     {
