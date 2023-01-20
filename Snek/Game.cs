@@ -163,7 +163,7 @@ public class Game
     {
         if (!_player.CanFace(direction)) return;
 
-        _player.Face(direction);
+        _grid.SetPlayerFacing(direction);
     }
 
     /// <summary>

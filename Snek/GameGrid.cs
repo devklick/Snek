@@ -120,4 +120,11 @@ public class GameGrid : StyledObject, IGrid
                 OnCellUpdated(cell);
             }
     }
+
+    public void SetPlayerFacing(Direction direction)
+    {
+        ArgumentNullException.ThrowIfNull(_player);
+        _player.Face(direction);
+        OnCellUpdated(_player.CreateCell(_player.Head.Position, true));
+    }
 }
