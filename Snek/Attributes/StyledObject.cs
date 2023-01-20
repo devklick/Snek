@@ -23,5 +23,5 @@ public abstract class StyledObject
     /// <param name="position">The position the cell should occupy.</param>
     /// <returns>The new <see cref="Cell"/> instance.</returns>
     public virtual Cell CreateCell(Position position)
-        => new(position.X, position.Y, BackgroundColor, SpriteColor, Sprite);
+        => new(position, BackgroundColor, SpriteColor, Sprite);
 }

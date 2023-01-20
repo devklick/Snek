@@ -64,18 +64,27 @@ public class GameGrid : StyledObject, IGrid
     public void MovePlayer(Position nextHeadPosition)
     {
         ArgumentNullException.ThrowIfNull(_player);
-        var newHeadCell = _player.CreateCell(nextHeadPosition);
+
+        // The new head position should have the colors flipped
+        var newHeadCell = _player.CreateCell(nextHeadPosition, true);
+
+        // We need to update the cell that is currently the players head, 
+        // Since it's no longer the head it no longer uses the head style
+        var oldHeadCell = _player.CreateCell(_player.Head.Position);
 
         // In order to tell the display that the players tail is no longer on the current tail position
         // (i.e. the players snake has moved by 1 position), we need to create a cell using the grid style 
         // at the current position snakes tail.
         var oldTailCell = CreateCell(_player.Tail.Position);
 
+        // Add the new head cell, update the previous head cell, and remove the tail cell
         _player.Cells.Insert(0, newHeadCell);
+        _player.Cells[1] = oldHeadCell;
         _player.Cells.Remove(_player.Tail);
 
-        OnCellUpdated(newHeadCell);
         OnCellUpdated(oldTailCell);
+        OnCellUpdated(oldHeadCell);
+        OnCellUpdated(newHeadCell);
     }
 
     /// <summary>
