@@ -78,7 +78,7 @@ public class Display
     /// <param name="cell">The data to be drawn</param>
     /// <param name="anchor">The position that the cell should be drawn relative to. Defaults to `0,0`</param>
     /// <param name="disableMultipliers">Whether or not multiplication (or rather repetition) of cells should be disabled.</param>
-    public void Draw(Cell cell, Position? anchor = null, bool disableMultipliers = false)
+    private void Draw(Cell cell, Position? anchor = null, bool disableMultipliers = false)
     {
         lock (drawLock)
         {
