@@ -1,6 +1,5 @@
 using Snek.Abstract;
 using Snek.Extensions;
-using Snek.Interfaces;
 
 namespace Snek;
 

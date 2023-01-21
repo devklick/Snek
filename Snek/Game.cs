@@ -14,7 +14,7 @@ public class Game
     private readonly Hud _hud;
     private readonly InputManager _input;
     private readonly GamePlayTimer _timer;
-    private Enemy _enemy;
+    private Enemy? _enemy;
     private GameState _state;
     private const int DefaultTicksPerSecond = 3;
     private int _ticksPerSecond = DefaultTicksPerSecond;
@@ -95,7 +95,7 @@ public class Game
     private void GameLoop()
     {
         SetGameState(GameState.Playing);
-        while (_state != GameState.GameOver)
+        while (!_state.IsGameplayOver())
         {
             Thread.Sleep(Delay);
 
@@ -119,7 +119,7 @@ public class Game
 
     private void ReplayLoop()
     {
-        while (_state == GameState.GameOver)
+        while (_state.IsGameplayOver())
         {
             var input = _input.GetInput(_state);
 
@@ -196,20 +196,29 @@ public class Game
     /// Determines whether or not the player has destroyed the current enemy.
     /// </summary>
     private bool EnemyDestroyed()
-        => _player.Head.Position == _enemy.Cell.Position;
+        => _enemy != null && _player.Head.Position == _enemy.Cell.Position;
 
     /// <summary>
     /// Handles the functionality that needs to be executed when the player destroys an enemy.
     /// </summary>
     private void HandleEnemyDestroyed(Position oldTailPosition)
     {
+        _enemy = null;
+        _grid.Add(_enemy);
         _grid.ExtendPlayerTail(oldTailPosition);
 
-        _enemy = new(_grid.GetRandomAvailablePosition());
-        _grid.Add(_enemy);
+        if (_grid.AvailablePositions.Any())
+        {
+            _enemy = new(_grid.GetRandomAvailablePosition());
+            _grid.Add(_enemy);
 
-        SetScore(_score + 1);
-        _ticksPerSecond++;
+            SetScore(_score + 1);
+            _ticksPerSecond++;
+        }
+        else
+        {
+            SetGameState(GameState.Won);
+        }
     }
 
     /// <summary>
@@ -232,6 +241,7 @@ public class Game
         {
             case GameState.GameOver:
             case GameState.Paused:
+            case GameState.Won:
                 _timer.Stop();
                 break;
             case GameState.Playing:

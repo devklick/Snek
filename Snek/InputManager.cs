@@ -57,6 +57,8 @@ public class InputManager
 
             { (GameState.GameOver, ConsoleKey.R), PlayerInput.Replay },
             { (GameState.GameOver, ConsoleKey.Escape), PlayerInput.Quit },
+            { (GameState.Won, ConsoleKey.R), PlayerInput.Replay },
+            { (GameState.Won, ConsoleKey.Escape), PlayerInput.Quit },
         };
 
         _actionToKeyMap = new();
