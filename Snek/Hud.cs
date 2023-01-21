@@ -77,7 +77,7 @@ public class Hud : StyledObject, IGrid
     private void OnGameStateUpdated(object? sender, GameStateUpdatedEventArgs e)
     {
         var message = e.State.ToString().ToSentenceCase();
-        if (e.State == GameState.GameOver)
+        if (e.State.IsGameplayOver())
         {
             var mapping = _input.GetMappingForInput(PlayerInput.Replay);
             if (mapping.Any())

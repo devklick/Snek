@@ -52,10 +52,11 @@ public class GameGrid : StyledObject, IGrid
         _player.Cells.ForEach(OnCellUpdated);
     }
 
-    public void Add(Enemy enemy)
+    public void Add(Enemy? enemy)
     {
         _enemy = enemy;
-        OnCellUpdated(enemy.Cell);
+
+        if (_enemy != null) OnCellUpdated(_enemy.Cell);
     }
 
     public bool IsInBounds(Position position)
