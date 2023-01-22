@@ -24,6 +24,7 @@ public class Game
     private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
     private readonly int _width;
     private readonly int _height;
+    private WallCollisionBehavior wallCollisionBehavior = WallCollisionBehavior.GameOver;
 
     public Game(int width, int height)
     {
@@ -178,7 +179,13 @@ public class Game
     {
         var nextHeadPosition = _player.NextHeadPosition();
 
-        if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition, true))
+        if (!_grid.IsInBounds(nextHeadPosition))
+        {
+            HandleWallCollision();
+            return;
+        }
+
+        if (_player.IsOccupyingPosition(nextHeadPosition, true))
         {
             SetGameState(GameState.GameOver);
             return;
@@ -189,6 +196,20 @@ public class Game
         if (EnemyDestroyed())
         {
             HandleEnemyDestroyed(oldTailPosition);
+        }
+    }
+
+    private void HandleWallCollision()
+    {
+        if (wallCollisionBehavior == WallCollisionBehavior.Rebound)
+        {
+            _grid.ReversePlayer();
+            return;
+        }
+        else
+        {
+            SetGameState(GameState.GameOver);
+            return;
         }
     }
 

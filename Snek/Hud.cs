@@ -1,5 +1,4 @@
 using Snek.Extensions;
-using Snek.Abstract;
 using Snek.Events;
 using Snek.Interfaces;
 
@@ -8,7 +7,7 @@ namespace Snek;
 /// <summary>
 /// A panel that exists as part of a <see cref="Display"/> where information can be presented.
 /// </summary>
-public class Hud : StyledObject, IGrid
+public class Hud : IStyled<Cell>, IGrid
 {
     /// <summary>
     /// The width of the HUD, which should match the width of the enclosing Display.
@@ -30,9 +29,9 @@ public class Hud : StyledObject, IGrid
     public Position Anchor { get; }
 
     public List<Cell> Cells => _cells.Values.ToList();
-    public override ConsoleColor BackgroundColor { get; }
-    public override ConsoleColor SpriteColor { get; }
-    public override char Sprite => ' ';
+    public ConsoleColor BackgroundColor { get; }
+    public ConsoleColor SpriteColor { get; }
+    public char Sprite => ' ';
 
     private readonly Dictionary<(int x, int y), Cell> _cells = new();
     private readonly InputManager _input;
@@ -140,4 +139,7 @@ public class Hud : StyledObject, IGrid
             for (int y = 0; y < Height; y++)
                 _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
     }
+
+    public Cell CreateCell(Position position)
+        => new(position, BackgroundColor, SpriteColor, Sprite);
 }

@@ -1,4 +1,3 @@
-using Snek.Abstract;
 using Snek.Events;
 using Snek.Interfaces;
 
@@ -10,14 +9,14 @@ namespace Snek;
 /// <remarks>
 /// Note that this does not contain any information that is part of the <see cref="Hud"/>. 
 /// </remarks>
-public class GameGrid : StyledObject, IGrid
+public class GameGrid : IStyled<Cell>, IGrid
 {
     public int Width { get; }
     public int Height { get; }
 
-    public override ConsoleColor BackgroundColor => ConsoleColor.Black;
-    public override ConsoleColor SpriteColor => ConsoleColor.Black;
-    public override char Sprite => ' ';
+    public ConsoleColor BackgroundColor => ConsoleColor.Black;
+    public ConsoleColor SpriteColor => ConsoleColor.Black;
+    public char Sprite => ' ';
 
     public List<Cell> Cells { get; } = new();
     private Player? _player;
@@ -67,11 +66,11 @@ public class GameGrid : StyledObject, IGrid
         ArgumentNullException.ThrowIfNull(_player);
 
         // The new head position should have the colors flipped
-        var newHeadCell = _player.CreateCell(nextHeadPosition, true);
+        var newHeadCell = _player.CreateCell(nextHeadPosition, true, _player.Facing);
 
         // We need to update the cell that is currently the players head, 
         // Since it's no longer the head it no longer uses the head style
-        var oldHeadCell = _player.CreateCell(_player.Head.Position);
+        var oldHeadCell = _player.CreateCell(_player.Head.Position, false, _player.Facing);
 
         // In order to tell the display that the players tail is no longer on the current tail position
         // (i.e. the players snake has moved by 1 position), we need to create a cell using the grid style 
@@ -101,6 +100,13 @@ public class GameGrid : StyledObject, IGrid
         OnCellUpdated(cell);
     }
 
+    public void ReversePlayer()
+    {
+        ArgumentNullException.ThrowIfNull(_player);
+        _player.Reverse();
+        _player.Cells.ForEach(OnCellUpdated);
+    }
+
     public void Reset() => BuildGridCells();
 
     /// <summary>
@@ -128,6 +134,9 @@ public class GameGrid : StyledObject, IGrid
     {
         ArgumentNullException.ThrowIfNull(_player);
         _player.Face(direction);
-        OnCellUpdated(_player.CreateCell(_player.Head.Position, true));
+        OnCellUpdated(_player.CreateCell(_player.Head.Position, true, direction));
     }
+
+    public Cell CreateCell(Position position)
+        => new Cell(position, BackgroundColor, SpriteColor, Sprite);
 }
