@@ -23,10 +23,10 @@ public class Hud : IStyled<Cell>, IGrid
     public int Height { get; }
 
     /// <summary>
-    /// The anchor is the point on the Display that the HUD is fixed to. 
-    /// Any cells that exist as part of the HUD will be drawn to the Display relative to this anchor. 
+    /// The offset is the point on the Display that the HUD is fixed to. 
+    /// Any cells that exist as part of the HUD will be drawn to the Display relative to this offset. 
     /// </summary>
-    public Position Anchor { get; }
+    public Position Offset { get; }
 
     public List<Cell> Cells => _cells.Values.ToList();
     public ConsoleColor BackgroundColor { get; }
@@ -42,7 +42,7 @@ public class Hud : IStyled<Cell>, IGrid
     public event CellUpdatedEventHandler? CellUpdated;
 
     public Hud(int width, int height,
-        Position anchor,
+        Position offset,
         InputManager input,
         ref ScoreUpdatedEventHandler? scoreUpdatedEventHandler,
         ref GamePlayTimer gamePlayTimer,
@@ -51,7 +51,7 @@ public class Hud : IStyled<Cell>, IGrid
         _input = input;
         Width = width;
         Height = height;
-        Anchor = anchor;
+        Offset = offset;
         BackgroundColor = ConsoleColor.DarkGray;
         SpriteColor = ConsoleColor.White;
         scoreUpdatedEventHandler += OnGameScoreUpdated;
@@ -90,9 +90,9 @@ public class Hud : IStyled<Cell>, IGrid
     private void UpdateTextBox(TextBox textBox, string value)
     {
         // if the current value is longer than the new value, we need to "reset" the cells that the new value will not overwrite.
-        if (textBox.Value != null && textBox.Value.Length > value.Length)
+        if (textBox.ValueString != null && textBox.ValueString.Length > value.Length)
         {
-            foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
+            foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
             {
                 UpdateCell(cell);
             }
@@ -100,7 +100,7 @@ public class Hud : IStyled<Cell>, IGrid
 
         textBox.SetValue(value);
 
-        foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
+        foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
         {
             UpdateCell(cell);
         }
@@ -112,23 +112,23 @@ public class Hud : IStyled<Cell>, IGrid
         CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
     }
 
-    private IEnumerable<Cell> GetTextBoxContentAsCells(Position anchor, Alignment align, string? content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
+    private IEnumerable<Cell> GetTextBoxContentAsCells(Position offset, Alignment align, string? content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
     {
         if (content == null) yield break;
-        var y = anchor.Y;
+        var y = offset.Y;
         for (int i = 0; i < content.Length; i++)
         {
             var spriteToUse = sprite ?? content.ElementAt(i);
-            var x = GetXPositionForValueAtIndex(anchor, align, content, i);
+            var x = GetXPositionForValueAtIndex(offset, align, content, i);
             yield return new Cell(x, y, backgroundColor, foregroundColor, spriteToUse);
         }
     }
 
-    private int GetXPositionForValueAtIndex(Position anchor, Alignment align, string content, int index)
+    private int GetXPositionForValueAtIndex(Position offset, Alignment align, string content, int index)
         => align switch
         {
-            Alignment.Left => anchor.X + index,
-            Alignment.Right => Width - anchor.X - content.Length + index,
+            Alignment.Left => offset.X + index,
+            Alignment.Right => Width - offset.X - content.Length + index,
             _ => (Width / 2) - (content.Length / 2) + index
         };
 

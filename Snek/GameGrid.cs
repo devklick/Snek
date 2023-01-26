@@ -13,6 +13,7 @@ public class GameGrid : IStyled<Cell>, IGrid
 {
     public int Width { get; }
     public int Height { get; }
+    public Position Offset => Position.Default;
 
     public ConsoleColor BackgroundColor => ConsoleColor.Black;
     public ConsoleColor SpriteColor => ConsoleColor.Black;
@@ -138,5 +139,5 @@ public class GameGrid : IStyled<Cell>, IGrid
     }
 
     public Cell CreateCell(Position position)
-        => new Cell(position, BackgroundColor, SpriteColor, Sprite);
+        => new(position, BackgroundColor, SpriteColor, Sprite);
 }
