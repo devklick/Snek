@@ -1,22 +1,25 @@
-using Snek.Abstract;
+using Snek.Interfaces;
 
 namespace Snek;
 
 /// <summary>
 /// The object that the player is trying to target and consume.
 /// </summary>
-public class Enemy : StyledObject
+public class Enemy : IStyled<Cell>
 {
     /// <summary>
     /// The cell on the grid that he enemy occupies.
     /// </summary>
     public Cell Cell { get; }
-    public override ConsoleColor BackgroundColor => ConsoleColor.DarkGreen;
-    public override ConsoleColor SpriteColor => ConsoleColor.Green;
-    public override char Sprite => 'Ж';
+    public ConsoleColor BackgroundColor => ConsoleColor.DarkGreen;
+    public ConsoleColor SpriteColor => ConsoleColor.Green;
+    public char Sprite => 'Ж';
 
     public Enemy(Position position)
     {
         Cell = new(position, BackgroundColor, SpriteColor, Sprite);
     }
+
+    public Cell CreateCell(Position position)
+        => new(position, BackgroundColor, SpriteColor, Sprite);
 }

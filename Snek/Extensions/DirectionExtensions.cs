@@ -5,6 +5,14 @@ namespace Snek.Extensions;
 
 public static class DirectionExtensions
 {
+    private static readonly Dictionary<Direction, Direction> _opposites = new()
+    {
+        { Direction.North, Direction.South},
+        { Direction.East, Direction.West},
+        { Direction.South, Direction.North},
+        { Direction.West, Direction.East},
+    };
+
     /// <summary>
     /// A cached map to access the sprite associated with each <see cref="Direction"/>.
     /// </summary>
@@ -17,10 +25,10 @@ public static class DirectionExtensions
     /// <param name="b">The second direction</param>
     /// <returns>`true` if they are opposite each other, otherwise `false`</returns>
     public static bool IsOpposite(this Direction a, Direction b)
-        => (a == Direction.North && b == Direction.South)
-            || (a == Direction.South && b == Direction.North)
-            || (a == Direction.East && b == Direction.West)
-            || (a == Direction.West && b == Direction.East);
+        => _opposites[a] == b;
+
+    public static Direction GetOpposite(this Direction direction)
+        => _opposites[direction];
 
     /// <summary>
     /// Gets the sprite associated with the specified <paramref name="direction"/>.

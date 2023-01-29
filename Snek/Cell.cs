@@ -1,14 +1,13 @@
-﻿using Snek.Abstract;
-using Snek.Interfaces;
+﻿using Snek.Interfaces;
 
 namespace Snek;
 
-public class Cell : StyledObject, IPositioned
+public class Cell : IStyled<Cell>, IPositioned
 {
     public Position Position { get; }
-    public override ConsoleColor BackgroundColor { get; } = ConsoleColor.Black;
-    public override ConsoleColor SpriteColor { get; } = ConsoleColor.Black;
-    public override char Sprite { get; } = ' ';
+    public ConsoleColor BackgroundColor { get; } = ConsoleColor.Black;
+    public ConsoleColor SpriteColor { get; } = ConsoleColor.Black;
+    public char Sprite { get; } = ' ';
 
     public Cell(int x, int y) : this(new Position(x, y))
     { }
@@ -40,4 +39,7 @@ public class Cell : StyledObject, IPositioned
         SpriteColor = foregroundColor;
         Sprite = sprite;
     }
+
+    public Cell CreateCell(Position position)
+        => new(position, BackgroundColor, SpriteColor, Sprite);
 }

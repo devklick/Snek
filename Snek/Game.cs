@@ -16,19 +16,19 @@ public class Game
     private readonly GamePlayTimer _timer;
     private Enemy? _enemy;
     private GameState _state;
-    private const int DefaultTicksPerSecond = 3;
-    private int _ticksPerSecond = DefaultTicksPerSecond;
+
+    private int _ticksPerSecond;
     private int _score = 0;
     private event ScoreUpdatedEventHandler? ScoreUpdated;
     private event GameStateUpdatedEventHandler? GameStateUpdated;
     private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
-    private readonly int _width;
-    private readonly int _height;
+    private readonly GameSettings _settings;
 
-    public Game(int width, int height)
+    public Game(GameSettings settings)
     {
-        _width = width;
-        _height = height;
+        _settings = settings;
+        _ticksPerSecond = _settings.InitialTicksPerSecond;
+
         // Set up the game timer to tick every 1 second
         _timer = new GamePlayTimer(1000);
 
@@ -36,7 +36,7 @@ public class Game
 
         // The order of operations is important here.
         // Grid has to be created first, obviously
-        _grid = new(_width, _height);
+        _grid = new(_settings.Width, _settings.Height);
 
         // Multipliers are used for presenting information to the display. 
         // Since each cell on basic console is around twice as tall as it is wide, 
@@ -46,7 +46,7 @@ public class Game
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
         // The idea of passing in event's as references isnt great, but it gets the job done.
-        _hud = new Hud(_width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
+        _hud = new Hud(_settings.Width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
@@ -58,7 +58,7 @@ public class Game
 
         // Next, the player needs to be created an added to the grid.
         // Doing so will update the display with the player cells.
-        _player = new(new Position(_width / 2, _height / 2));
+        _player = new(new Position(_settings.Width / 2, _settings.Height / 2));
         _grid.Add(_player);
 
         // Now we can check all available positions, determine where the enemy should be positioned,
@@ -75,11 +75,11 @@ public class Game
         SetGameState(GameState.Initializing);
         SetScore(0);
         _timer.Reset();
-        _player = new(new Position(_width / 2, _height / 2));
+        _player = new(new Position(_settings.Width / 2, _settings.Height / 2));
         _grid.Add(_player);
         _enemy = new(_grid.GetRandomAvailablePosition());
         _grid.Add(_enemy);
-        _ticksPerSecond = DefaultTicksPerSecond;
+        _ticksPerSecond = _settings.InitialTicksPerSecond;
     }
 
     /// <summary>
@@ -178,7 +178,13 @@ public class Game
     {
         var nextHeadPosition = _player.NextHeadPosition();
 
-        if (!_grid.IsInBounds(nextHeadPosition) || _player.IsOccupyingPosition(nextHeadPosition, true))
+        if (!_grid.IsInBounds(nextHeadPosition))
+        {
+            HandleWallCollision();
+            return;
+        }
+
+        if (_player.IsOccupyingPosition(nextHeadPosition, true))
         {
             SetGameState(GameState.GameOver);
             return;
@@ -189,6 +195,20 @@ public class Game
         if (EnemyDestroyed())
         {
             HandleEnemyDestroyed(oldTailPosition);
+        }
+    }
+
+    private void HandleWallCollision()
+    {
+        switch (_settings.WallCollisionBehavior)
+        {
+            case WallCollisionBehavior.Rebound:
+                _grid.ReversePlayer();
+                break;
+            case WallCollisionBehavior.GameOver:
+            default:
+                SetGameState(GameState.GameOver);
+                break;
         }
     }
 
@@ -213,7 +233,11 @@ public class Game
             _grid.Add(_enemy);
 
             SetScore(_score + 1);
-            _ticksPerSecond++;
+
+            if (_settings.IncreaseSpeedOnEnemyDestroyed)
+            {
+                _ticksPerSecond++;
+            }
         }
         else
         {

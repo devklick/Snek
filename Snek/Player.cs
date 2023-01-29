@@ -1,26 +1,26 @@
-using Snek.Abstract;
 using Snek.Extensions;
+using Snek.Interfaces;
 
 namespace Snek;
 
-public class Player : StyledObject
+public class Player : IStyled<PlayerCell>
 {
-    public override ConsoleColor BackgroundColor => ConsoleColor.White;
-    public override ConsoleColor SpriteColor => ConsoleColor.Red;
-    public override char Sprite => Facing.GetSprite();
+    public ConsoleColor BackgroundColor => ConsoleColor.White;
+    public ConsoleColor SpriteColor => ConsoleColor.Red;
+    public char Sprite => Facing.GetSprite();
     public Direction Facing { get; private set; }
-    public List<Cell> Cells { get; }
-    public Cell Head => Cells.First();
-    public Cell Tail => Cells.Last();
+    public List<PlayerCell> Cells { get; }
+    public PlayerCell Head => Cells.First();
+    public PlayerCell Tail => Cells.Last();
 
     public Player(Position position, int initialLength = 5)
     {
         Cells = new();
+        Facing = Direction.North;
         for (var i = 0; i < initialLength; i++)
         {
-            Cells.Add(CreateCell(new Position(position.X, position.Y + i), flipColors: i == 0));
+            Cells.Add(CreateCell(new(position.X, position.Y + i), flipColors: i == 0, Facing));
         }
-        Facing = Direction.North;
     }
 
     public bool CanFace(Direction direction)
@@ -47,10 +47,37 @@ public class Player : StyledObject
     public bool IsOccupyingPosition(Position position, bool ignoreTail = true)
         => Cells.Any(c => c.Position == position && (!ignoreTail || position != Tail.Position));
 
-    public Cell CreateCell(Position position, bool flipColors)
-    {
-        if (!flipColors) return base.CreateCell(position);
+    public PlayerCell CreateCell(Position position)
+            => new(position, BackgroundColor, SpriteColor, Sprite, Direction.North);
 
-        return new Cell(position, SpriteColor, BackgroundColor, Sprite);
+    public PlayerCell CreateCell(Position position, bool flipColors, Direction? facing = null)
+    {
+        if (!flipColors && facing == null) return CreateCell(position);
+        var backgroundColor = BackgroundColor;
+        var spriteColor = SpriteColor;
+
+        if (flipColors)
+        {
+            backgroundColor = SpriteColor;
+            spriteColor = BackgroundColor;
+        }
+
+        facing ??= Facing;
+
+        return new PlayerCell(position, backgroundColor, spriteColor, facing.Value.GetSprite(), facing.Value);
+    }
+
+    public void Reverse()
+    {
+        Face(Tail.Facing.GetOpposite());
+        Cells.Reverse();
+        for (int i = 0; i < Cells.Count; i++)
+        {
+            var oldCell = Cells[i];
+            var flipColors = oldCell == Head;
+
+            var newCell = CreateCell(oldCell.Position, flipColors, oldCell.Facing.GetOpposite());
+            Cells[i] = newCell;
+        }
     }
 }
