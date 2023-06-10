@@ -1,3 +1,4 @@
+using Snek.Audio;
 using Snek.Events;
 using Snek.Extensions;
 
@@ -23,9 +24,11 @@ public class Game
     private event GameStateUpdatedEventHandler? GameStateUpdated;
     private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
     private readonly GameSettings _settings;
+    private readonly AudioManager _audio;
 
     public Game(GameSettings settings)
     {
+        _audio = new AudioManager();
         _settings = settings;
         _ticksPerSecond = _settings.InitialTicksPerSecond;
 
@@ -159,6 +162,8 @@ public class Game
         if (!_player.CanFace(direction)) return;
 
         _grid.SetPlayerFacing(direction);
+
+        _audio.PlayPlayerMovedSound();
     }
 
     /// <summary>
@@ -181,6 +186,7 @@ public class Game
 
         if (_player.IsOccupyingPosition(nextHeadPosition, true))
         {
+            _audio.PlayPlayerDestroyedSound();
             SetGameState(GameState.GameOver);
             return;
         }
@@ -225,6 +231,7 @@ public class Game
         _enemy = null;
         _grid.Add(_enemy);
         _grid.ExtendPlayerTail(oldTailPosition);
+        _audio.PlayEnemyEatenSound();
 
         if (_grid.AvailablePositions.Any())
         {
