@@ -53,6 +53,9 @@ public class Player : IStyled<PlayerCell>
     public PlayerCell CreateCell(Position position, bool flipColors, Direction? facing = null)
     {
         if (!flipColors && facing == null) return CreateCell(position);
+
+        facing ??= Facing;
+
         var backgroundColor = BackgroundColor;
         var spriteColor = SpriteColor;
 
@@ -62,21 +65,28 @@ public class Player : IStyled<PlayerCell>
             spriteColor = BackgroundColor;
         }
 
-        facing ??= Facing;
-
         return new PlayerCell(position, backgroundColor, spriteColor, facing.Value.GetSprite(), facing.Value);
     }
 
     public void Reverse()
     {
-        Face(Tail.Facing.GetOpposite());
+        Face(Facing.GetOpposite());
         Cells.Reverse();
+
         for (int i = 0; i < Cells.Count; i++)
         {
             var oldCell = Cells[i];
+
+            // While the head has the same colors as the body, those colors are inverted. 
+            // If the old cell is the head, we need to invert the colors again, 
+            // as this cell will now form the tail (which is part of the body)
             var flipColors = oldCell == Head;
 
-            var newCell = CreateCell(oldCell.Position, flipColors, oldCell.Facing.GetOpposite());
+            // When the player is reversed, their old tail becomes their new head, 
+            // and their new head must face the opposite direction of their old head.
+            var facing = oldCell == Head ? Facing : oldCell.Facing.GetOpposite();
+
+            var newCell = CreateCell(oldCell.Position, flipColors, facing);
             Cells[i] = newCell;
         }
     }
