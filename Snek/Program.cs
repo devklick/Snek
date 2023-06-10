@@ -2,5 +2,8 @@
 
 class Program
 {
-    static void Main() => new Game(15, 15).Play();
+    static void Main()
+    {
+        new Game(GameSettings.Default).Play();
+    }
 }

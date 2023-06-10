@@ -4,7 +4,7 @@ public class TextBox
 {
     public ConsoleColor BackgroundColor { get; }
     public ConsoleColor ForegroundColor { get; }
-    public string Content => $"{Label}: {Value}";
+    public string? Content => string.IsNullOrEmpty(Label) ? ValueString : $"{Label}: {ValueString}";
     /// <summary>
     /// The position relative to the parent object that this text box will be drawn.
     /// </summary>
@@ -14,23 +14,23 @@ public class TextBox
     /// <see cref="Alignment.Right"/>, it's relative to the right edge.
     /// Otherwise, when it's <see cref="Alignment.Centre"/>, the <see cref="Position.X"/> property will be ignored.
     /// </remarks>
-    public Position Anchor { get; }
+    public Position Offset { get; }
     public Alignment Align { get; }
-    public string? Value { get; set; }
-    public string Label { get; }
+    public string? ValueString { get; set; }
+    public string? Label { get; }
 
-    public TextBox(Position anchor, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string label, string? value = null)
+    public TextBox(Position offset, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string? label = null, string? value = null)
     {
-        Anchor = anchor;
+        Offset = offset;
         BackgroundColor = backgroundColor;
         ForegroundColor = foregroundColor;
         Align = align;
         Label = label;
-        Value = value;
+        ValueString = value;
     }
 
     public void SetValue(string value)
     {
-        Value = value;
+        ValueString = value;
     }
 }

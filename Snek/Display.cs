@@ -17,6 +17,8 @@ public class Display
     /// </summary>
     private readonly int _height;
 
+    private readonly Position _hudOffset = Position.Default;
+
     /// <summary>
     /// The multiplier to be applied when drawing along the `X` axis. 
     /// </summary>
@@ -34,16 +36,6 @@ public class Display
     private readonly int _heightMultiplier;
 
     /// <summary>
-    /// The grid that sits behind the display.
-    /// </summary>
-    private readonly GameGrid _gameGrid;
-
-    /// <summary>
-    /// The HUD where game info is presented.
-    /// </summary>
-    private readonly Hud _hud;
-
-    /// <summary>
     /// A simple object intended to be used for locking the <see cref="Draw(Cell, Position?, bool)"/> method.
     /// </summary>
     private readonly object drawLock = new();
@@ -54,35 +46,34 @@ public class Display
     /// <param name="gameGrid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
     /// <param name="widthMultiplier">The number of times to repeat a cell along the `X` axis when drawing it to the display.</param>
     /// <param name="heightMultiplier">The number of times to repeat a cell along the `Y` axis when drawing it to the display.</param>
-    public Display(GameGrid gameGrid, Hud hud, int widthMultiplier, int heightMultiplier)
+    public Display(int width, int height, int widthMultiplier, int heightMultiplier, GameGrid gameGrid, Hud hud)
     {
-        _gameGrid = gameGrid;
-        _hud = hud;
+        _width = width;
+        _height = height;
         _widthMultiplier = widthMultiplier;
         _heightMultiplier = heightMultiplier;
-        _width = _gameGrid.Width * _widthMultiplier;
-        _height = _gameGrid.Height * _heightMultiplier + hud.Height * _heightMultiplier;
 
         InitializeConsole();
 
-        foreach (var cell in _gameGrid.Cells) Draw(cell);
-        foreach (var cell in hud.Cells) Draw(cell, hud.Anchor, true);
+        foreach (var cell in gameGrid.Cells) Draw(cell);
+        foreach (var cell in hud.Cells) Draw(cell, hud.Offset, true);
 
-        _gameGrid.CellUpdated += OnGameGridCellUpdated;
-        _hud.CellUpdated += OnHudCellUpdated;
+        gameGrid.CellUpdated += OnGameGridCellUpdated;
+        hud.CellUpdated += OnHudCellUpdated;
+        _hudOffset = hud.Offset;
     }
 
     /// <summary>
     /// Draws the specified <paramref name="cell"/> to the console.
     /// </summary>
     /// <param name="cell">The data to be drawn</param>
-    /// <param name="anchor">The position that the cell should be drawn relative to. Defaults to `0,0`</param>
+    /// <param name="offset">The position that the cell should be drawn relative to. Defaults to `0,0`</param>
     /// <param name="disableMultipliers">Whether or not multiplication (or rather repetition) of cells should be disabled.</param>
-    public void Draw(Cell cell, Position? anchor = null, bool disableMultipliers = false)
+    private void Draw(Cell cell, Position? offset = null, bool disableMultipliers = false)
     {
         lock (drawLock)
         {
-            anchor ??= Position.Default;
+            offset ??= Position.Default;
             var _bgCopy = Console.BackgroundColor;
             var _fgCopy = Console.ForegroundColor;
 
@@ -97,8 +88,8 @@ public class Display
             {
                 for (int c = 0; c < widthMultiplier; c++)
                 {
-                    var x = (cell.Position.X * widthMultiplier) + c + anchor.Value.X;
-                    var y = (cell.Position.Y * heightMultiplier) + r + anchor.Value.Y;
+                    var x = (cell.Position.X * widthMultiplier) + c + offset.Value.X;
+                    var y = (cell.Position.Y * heightMultiplier) + r + offset.Value.Y;
                     Console.SetCursorPosition(x, y);
                     Console.Write(cell.Sprite);
                 }
@@ -119,7 +110,7 @@ public class Display
     /// Handles cells on the HUD that have been updated, drawing them to the console.
     /// </summary>
     private void OnHudCellUpdated(object? sender, CellUpdatedEventArgs e)
-        => Draw(e.Cell, _hud.Anchor, e.PreserveExact);
+        => Draw(e.Cell, _hudOffset, e.PreserveExact);
 
     /// <summary>
     /// Initializes the console dimensions, if possible. 

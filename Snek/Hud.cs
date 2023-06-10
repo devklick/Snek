@@ -1,5 +1,4 @@
 using Snek.Extensions;
-using Snek.Abstract;
 using Snek.Events;
 using Snek.Interfaces;
 
@@ -8,7 +7,7 @@ namespace Snek;
 /// <summary>
 /// A panel that exists as part of a <see cref="Display"/> where information can be presented.
 /// </summary>
-public class Hud : StyledObject, IGrid
+public class Hud : IStyled<Cell>, IGrid
 {
     /// <summary>
     /// The width of the HUD, which should match the width of the enclosing Display.
@@ -24,45 +23,49 @@ public class Hud : StyledObject, IGrid
     public int Height { get; }
 
     /// <summary>
-    /// The anchor is the point on the Display that the HUD is fixed to. 
-    /// Any cells that exist as part of the HUD will be drawn to the Display relative to this anchor. 
+    /// The offset is the point on the Display that the HUD is fixed to. 
+    /// Any cells that exist as part of the HUD will be drawn to the Display relative to this offset. 
     /// </summary>
-    public Position Anchor { get; }
+    public Position Offset { get; }
 
     public List<Cell> Cells => _cells.Values.ToList();
-    public override ConsoleColor BackgroundColor { get; }
-    public override ConsoleColor SpriteColor { get; }
-    public override char Sprite => ' ';
+    public ConsoleColor BackgroundColor { get; }
+    public ConsoleColor SpriteColor { get; }
+    public char Sprite => ' ';
 
     private readonly Dictionary<(int x, int y), Cell> _cells = new();
+    private readonly InputManager _input;
     private readonly TextBox _scoreTextBox;
     private readonly TextBox _gamePlayTimerTextBox;
     private readonly TextBox _gameStateTextBox;
 
     public event CellUpdatedEventHandler? CellUpdated;
 
-    public Hud(int width, int height, Position anchor,
+    public Hud(int width, int height,
+        Position offset,
+        InputManager input,
         ref ScoreUpdatedEventHandler? scoreUpdatedEventHandler,
         ref GamePlayTimer gamePlayTimer,
         ref GameStateUpdatedEventHandler? gameStateUpdatedEventHandler)
     {
+        _input = input;
         Width = width;
         Height = height;
-        Anchor = anchor;
-        BackgroundColor = ConsoleColor.DarkBlue;
-        SpriteColor = ConsoleColor.Black;
+        Offset = offset;
+        BackgroundColor = ConsoleColor.DarkGray;
+        SpriteColor = ConsoleColor.White;
         scoreUpdatedEventHandler += OnGameScoreUpdated;
         gamePlayTimer.Updated += GamePlayTimerUpdated;
         gameStateUpdatedEventHandler += OnGameStateUpdated;
 
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
+        BuildHudCells();
 
         _scoreTextBox = new TextBox(new Position(2, 3), Alignment.Left, BackgroundColor, SpriteColor, "Score");
         _gamePlayTimerTextBox = new TextBox(new Position(2, 3), Alignment.Right, BackgroundColor, SpriteColor, "Time");
-        _gameStateTextBox = new TextBox(new Position(0, 1), Alignment.Centre, BackgroundColor, SpriteColor, "State");
+        _gameStateTextBox = new TextBox(new Position(0, 1), Alignment.Centre, BackgroundColor, SpriteColor);
     }
+
+    public void Reset() => BuildHudCells();
 
     private void GamePlayTimerUpdated(object? sender, GamePlayTimerUpdatedEventArgs e)
         => UpdateTextBox(_gamePlayTimerTextBox, Math.Round(e.Elapsed.TotalSeconds, 0).ToString() + "s");
@@ -71,14 +74,25 @@ public class Hud : StyledObject, IGrid
         => UpdateTextBox(_scoreTextBox, e.Score.ToString());
 
     private void OnGameStateUpdated(object? sender, GameStateUpdatedEventArgs e)
-        => UpdateTextBox(_gameStateTextBox, e.State.ToString().ToSentenceCase());
+    {
+        var message = e.State.ToString().ToSentenceCase();
+        if (e.State.IsGameplayOver())
+        {
+            var mapping = _input.GetMappingForInput(PlayerInput.Replay);
+            if (mapping.Any())
+            {
+                message += $" - Replay? ({mapping.First().Key.ToString().ToLower()})";
+            }
+        }
+        UpdateTextBox(_gameStateTextBox, message);
+    }
 
     private void UpdateTextBox(TextBox textBox, string value)
     {
         // if the current value is longer than the new value, we need to "reset" the cells that the new value will not overwrite.
-        if (textBox.Value != null && textBox.Value.Length > value.Length)
+        if (textBox.ValueString != null && textBox.ValueString.Length > value.Length)
         {
-            foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
+            foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
             {
                 UpdateCell(cell);
             }
@@ -86,7 +100,7 @@ public class Hud : StyledObject, IGrid
 
         textBox.SetValue(value);
 
-        foreach (var cell in GetTextBoxContentAsCells(textBox.Anchor, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
+        foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
         {
             UpdateCell(cell);
         }
@@ -98,22 +112,34 @@ public class Hud : StyledObject, IGrid
         CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
     }
 
-    private IEnumerable<Cell> GetTextBoxContentAsCells(Position anchor, Alignment align, string content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
+    private IEnumerable<Cell> GetTextBoxContentAsCells(Position offset, Alignment align, string? content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
     {
-        var y = anchor.Y;
+        if (content == null) yield break;
+        var y = offset.Y;
         for (int i = 0; i < content.Length; i++)
         {
             var spriteToUse = sprite ?? content.ElementAt(i);
-            var x = GetXPositionForValueAtIndex(anchor, align, content, i);
+            var x = GetXPositionForValueAtIndex(offset, align, content, i);
             yield return new Cell(x, y, backgroundColor, foregroundColor, spriteToUse);
         }
     }
 
-    private int GetXPositionForValueAtIndex(Position anchor, Alignment align, string content, int index)
+    private int GetXPositionForValueAtIndex(Position offset, Alignment align, string content, int index)
         => align switch
         {
-            Alignment.Left => anchor.X + index,
-            Alignment.Right => Width - anchor.X - content.Length + index,
+            Alignment.Left => offset.X + index,
+            Alignment.Right => Width - offset.X - content.Length + index,
             _ => (Width / 2) - (content.Length / 2) + index
         };
+
+    private void BuildHudCells()
+    {
+        _cells.Clear();
+        for (int x = 0; x < Width; x++)
+            for (int y = 0; y < Height; y++)
+                _cells.Add((x, y), new(x, y, BackgroundColor, SpriteColor, Sprite));
+    }
+
+    public Cell CreateCell(Position position)
+        => new(position, BackgroundColor, SpriteColor, Sprite);
 }

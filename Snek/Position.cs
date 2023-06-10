@@ -28,7 +28,7 @@ public struct Position
     /// </summary>
     /// <param name="position">The instance of Position to compared against the current instance</param>
     /// <returns>If the X and Y properties of the current instance of the Position class contain the same value as those on the Position specified for comparison, returns true. Otherwise false</returns>
-    public bool Equals(Position position)
+    public readonly bool Equals(Position position)
     {
         return position.X == X && position.Y == Y;
     }
@@ -38,7 +38,7 @@ public struct Position
     /// </summary>
     /// <param name="obj">The object to compare against the current Position instance</param>
     /// <returns>If the other object being compared is also a Position, and has the same X and Y values, the method will return true, otherwise false</returns>
-    public override bool Equals(object? obj)
+    public override readonly bool Equals(object? obj)
     {
         return obj is Position position && Equals(position);
     }
@@ -69,7 +69,7 @@ public struct Position
     /// Gives the ability to perform efficient insertions and lookups within collections that are based on a hash table.
     /// </summary>
     /// <returns>Returns an integer representation of the current Position instance</returns>
-    public override int GetHashCode()
+    public override readonly int GetHashCode()
     {
         var hash = new HashCode();
         hash.Add(X);
