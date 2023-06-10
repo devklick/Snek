@@ -29,7 +29,6 @@ public enum PlayerInput
 
 public class InputManager
 {
-    // TODO: Would be nice to have this configurable rather than hardcoded.
     /// <summary>
     /// A map between input keys an input actions.
     /// </summary>
