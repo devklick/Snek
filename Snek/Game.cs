@@ -38,18 +38,13 @@ public class Game
         // Grid has to be created first, obviously
         _grid = new(_settings.Width, _settings.Height);
 
-        // Multipliers are used for presenting information to the display. 
-        // Since each cell on basic console is around twice as tall as it is wide, 
-        // but we want to make each cell seem more square than rectangular, we apply multipliers.
-        int displayWidthMultiplier = 2, displayHeightMultiplier = 1;
-
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
         // The idea of passing in event's as references isnt great, but it gets the job done.
-        _hud = new Hud(_settings.Width * displayWidthMultiplier, 5 * displayHeightMultiplier, new Position(0, _grid.Width), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
+        _hud = new Hud(settings.HudWidth, settings.HudHeight, new Position(0, _grid.Width), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
-        _display = new(_grid, _hud, displayWidthMultiplier, displayHeightMultiplier);
+        _display = new(settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);
 
         // Since we've got the display configured and rendered, we can trigger the update of the various info that gets drawn to the HUD.
         SetGameState(GameState.Initializing);

@@ -1,5 +1,4 @@
 using Snek.Events;
-using Snek.Interfaces;
 
 namespace Snek;
 
@@ -47,12 +46,12 @@ public class Display
     /// <param name="gameGrid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
     /// <param name="widthMultiplier">The number of times to repeat a cell along the `X` axis when drawing it to the display.</param>
     /// <param name="heightMultiplier">The number of times to repeat a cell along the `Y` axis when drawing it to the display.</param>
-    public Display(IGrid gameGrid, IGrid hud, int widthMultiplier, int heightMultiplier)
+    public Display(int width, int height, int widthMultiplier, int heightMultiplier, GameGrid gameGrid, Hud hud)
     {
+        _width = width;
+        _height = height;
         _widthMultiplier = widthMultiplier;
         _heightMultiplier = heightMultiplier;
-        _width = gameGrid.Width * _widthMultiplier;
-        _height = gameGrid.Height * _heightMultiplier + hud.Height * _heightMultiplier;
 
         InitializeConsole();
 
