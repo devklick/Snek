@@ -108,6 +108,18 @@ public class GameGrid : IStyled<Cell>, IGrid
         _player.Cells.ForEach(OnCellUpdated);
     }
 
+    public void PortalPlayer(Position positionBefore)
+    {
+        int x = positionBefore.X, y = positionBefore.Y;
+
+        if (positionBefore.X < 0) x = Width - 1;
+        else if (positionBefore.X > Width - 1) x = 0;
+        else if (positionBefore.Y < 0) y = Height - 1;
+        else if (positionBefore.Y > Height - 1) y = 0;
+
+        MovePlayer(new Position(x, y));
+    }
+
     public void Reset() => BuildGridCells();
 
     /// <summary>

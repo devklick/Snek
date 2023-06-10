@@ -8,7 +8,7 @@ public class GameSettings
         Height = 15,
         InitialTicksPerSecond = 8,
         IncreaseSpeedOnEnemyDestroyed = false,
-        WallCollisionBehavior = WallCollisionBehavior.Rebound
+        WallCollisionBehavior = WallCollisionBehavior.Portal
     };
 
     public int Width { get; set; }

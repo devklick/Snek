@@ -175,7 +175,7 @@ public class Game
 
         if (!_grid.IsInBounds(nextHeadPosition))
         {
-            HandleWallCollision();
+            HandleWallCollision(nextHeadPosition);
             return;
         }
 
@@ -193,13 +193,17 @@ public class Game
         }
     }
 
-    private void HandleWallCollision()
+    private void HandleWallCollision(Position nextHeadPosition)
     {
         switch (_settings.WallCollisionBehavior)
         {
             case WallCollisionBehavior.Rebound:
                 _grid.ReversePlayer();
                 break;
+            case WallCollisionBehavior.Portal:
+                _grid.PortalPlayer(nextHeadPosition);
+                break;
+
             case WallCollisionBehavior.GameOver:
             default:
                 SetGameState(GameState.GameOver);
