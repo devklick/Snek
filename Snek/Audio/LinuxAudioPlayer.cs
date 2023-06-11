@@ -4,48 +4,46 @@ namespace Snek.Audio;
 
 public class LinuxAudioPlayer : AudioPlayer
 {
-    public override IReadOnlyList<string> SupportedFileTypes => _supportedFileTypes;
-
-    private static readonly Dictionary<string, string> _cliPlayers = new()
+    private class CommandInfo
     {
-        { ".wav", "aplay" }
+        public string Command { get; set; }
+        public string ArgumentTemplate { get; set; }
+        public bool Installed { get; set; }
+        public CommandInfo(string command, string argumentTemplate, bool installed)
+        {
+            Command = command;
+            ArgumentTemplate = argumentTemplate;
+            Installed = installed;
+        }
+    }
+
+    private static readonly List<CommandInfo> _commandsInfo = new()
+    {
+        new("aplay", "{0}", false)
     };
-    private readonly List<string> _supportedFileTypes = GetSupportedFileTypes();
 
     public LinuxAudioPlayer()
-    { }
+    {
+        CheckInstalledCommands();
+    }
 
     public override void Play(string file)
     {
-        var fileType = Path.GetExtension(file);
-        if (!_cliPlayers.TryGetValue(fileType.ToLower(), out var cliPlayer))
-        {
-            // TODO: Handle the scenario where we do not have a CLI player installed that can support the file type
-            return;
-        }
-
-        ExecuteCommand($"{cliPlayer} {file}");
+        var commandInfo = _commandsInfo.First(c => c.Installed);
+        if (commandInfo == null) return;
+        ExecuteCommand($"{commandInfo.Command} {string.Format(commandInfo.ArgumentTemplate, file)}");
     }
 
-    private static List<string> GetSupportedFileTypes()
+    private static void CheckInstalledCommands()
     {
-        var supported = new List<string>();
-        foreach (var entry in _cliPlayers)
+        foreach (var entry in _commandsInfo)
         {
-            var fileType = entry.Key;
-            var cliPlayer = entry.Value;
-            var process = ExecuteCommand($"command -v {cliPlayer}");
+            var command = entry.Command;
+            var process = ExecuteCommand($"command -v {command}");
 
             process.WaitForExit();
-            var installed = process.ExitCode == 0;
-
-            if (installed)
-            {
-                supported.Add(fileType);
-            }
+            entry.Installed = process.ExitCode == 0;
         }
-
-        return supported;
     }
 
     private static Process ExecuteCommand(string command)
@@ -61,7 +59,6 @@ public class LinuxAudioPlayer : AudioPlayer
 
                 RedirectStandardOutput = true,
                 RedirectStandardInput = true,
-                UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
             }
