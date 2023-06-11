@@ -36,7 +36,7 @@ public class Display
     private readonly int _heightMultiplier;
 
     /// <summary>
-    /// A simple object intended to be used for locking the <see cref="Draw(Cell, Position?, bool)"/> method.
+    /// A simple object intended to be used for locking the <see cref="Draw"/> method.
     /// </summary>
     private readonly object drawLock = new();
 
@@ -136,9 +136,9 @@ public class Display
         // so lets set the dimensions based on the size of the game.
 
         // We add 1 to the buffer and window height to accommodate for overflow.
-        // TODO: Verify this works (run on windows)
         Console.SetWindowSize(_width, _height + 1);
         Console.SetBufferSize(_width, _height + 1);
+        Console.CursorVisible = false;
     }
 
     private void InitializeNonWindowsConsole()
