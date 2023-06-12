@@ -4,6 +4,12 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
     [
+      "@semantic-release/exec",
+      {
+        "verifyReleaseCmd": "echo RELEASE_VERSION=${nextRelease.version} >> $GITHUB_ENV"
+      }
+    ],
+    [
       "@semantic-release/github",
       {
         "assets": [
@@ -13,13 +19,6 @@
             "name": "my-project-${nextRelease.gitTag}.zip"
           }
         ]
-      }
-    ],
-    "@semantic-release/git",
-    [
-      "@semantic-release/exec",
-      {
-        "verifyReleaseCmd": "echo RELEASE_VERSION=${nextRelease.version} >> $GITHUB_ENV"
       }
     ]
   ]
