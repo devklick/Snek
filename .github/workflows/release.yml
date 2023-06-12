@@ -39,11 +39,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --branches "main" --dry-run
 
-      - name: Run publish
+      - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
 
-      - name: ZIP build output
+      - name: ZIP Windows output
         run: zip -r build/Snek_win-x64.zip build/win-x64
+
+      - name: Run publish Linux
+        run: dotnet publish -c release -r linux-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/linux-x64
+
+      - name: ZIP Linux output
+        run: zip -r build/Snek_win-x64.zip build/linux-x64
 
       - name: Release
         env:
