@@ -40,10 +40,10 @@ jobs:
         run: npx semantic-release --branches "main" --dry-run
 
       - name: Run publish
-        run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o Snek
+        run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
 
-      - name: ZIP my-project directory
-        run: zip -r Snek.zip Snek
+      - name: ZIP build output
+        run: zip -r build/Snek_win-x64.zip build/win-x64
 
       - name: Release
         env:

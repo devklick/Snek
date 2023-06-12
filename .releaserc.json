@@ -14,9 +14,9 @@
       {
         "assets": [
           {
-            "path": "my-project.zip",
-            "label": "my-project-${nextRelease.gitTag}.zip",
-            "name": "my-project-${nextRelease.gitTag}.zip"
+            "path": "build/Snek_win-x64.zip",
+            "label": "build/Snek_${nextRelease.gitTag}_win-x64.zip",
+            "name": "build/Snek_${nextRelease.gitTag}_win-x64.zip"
           }
         ]
       }
