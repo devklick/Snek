@@ -37,13 +37,13 @@ jobs:
       - name: Fetch release version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches main --dry-run
+        run: npx semantic-release --branches "feature/release-workflow" --dry-run && echo "stuff about releas version" $RELEASE_VERSION
 
       - name: Run publish
-        run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o Snek_v${{ env.RELEASE_VERSION }}
+        run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o Snek
 
       - name: ZIP my-project directory
-        run: zip -r Snek_v${{ env.RELEASE_VERSION }}.zip Snek_v${{ env.RELEASE_VERSION }}
+        run: zip -r Snek.zip Snek
 
       - name: Release
         env:
