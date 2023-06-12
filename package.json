@@ -1,0 +1,25 @@
+{
+  "name": "snek",
+  "version": "1.0.0",
+  "description": "A terminal version of the classic mobile game, Snake.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devklick/Snek.git"
+  },
+  "author": "devklick@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/devklick/Snek/issues"
+  },
+  "homepage": "https://github.com/devklick/Snek#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^21.0.5"
+  }
+}
