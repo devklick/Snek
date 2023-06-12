@@ -3,7 +3,7 @@ name: Release on push on main branch
 on:
   push:
     branches:
-      - feature/release-workflow #temporary, switch to main
+      - main
 
 jobs:
   release-snek:
@@ -37,7 +37,7 @@ jobs:
       - name: Fetch release version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches "feature/release-workflow" --dry-run && echo "stuff about releas version" $RELEASE_VERSION
+        run: npx semantic-release --branches "main" --dry-run
 
       - name: Run publish
         run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o Snek
