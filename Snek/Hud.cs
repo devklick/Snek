@@ -52,8 +52,8 @@ public class Hud : IStyled<Cell>, IGrid
         Width = width;
         Height = height;
         Offset = offset;
-        BackgroundColor = ConsoleColor.DarkGray;
-        SpriteColor = ConsoleColor.White;
+        BackgroundColor = ConsoleColor.Gray;
+        SpriteColor = ConsoleColor.Black;
         scoreUpdatedEventHandler += OnGameScoreUpdated;
         gamePlayTimer.Updated += GamePlayTimerUpdated;
         gameStateUpdatedEventHandler += OnGameStateUpdated;
