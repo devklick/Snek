@@ -20,7 +20,7 @@ public class GameSettings
     public int DisplayWidthMultiplier => 2;
     public int DisplayHeightMultiplier => 1;
     public int DisplayWidth => DisplayWidthMultiplier * Width;
-    public int DisplayHeight => DisplayHeightMultiplier * Height;
+    public int DisplayHeight => (DisplayHeightMultiplier * Height) + HudHeight;
     public int HudWidth => DisplayWidth;
     public int HudHeight => DisplayHeightMultiplier * 5;
 }
