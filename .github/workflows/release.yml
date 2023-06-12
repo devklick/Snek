@@ -1,4 +1,4 @@
-name: Release on push on main branch
+name: Release Snek
 
 on:
   push:
