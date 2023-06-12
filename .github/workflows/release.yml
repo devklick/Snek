@@ -49,7 +49,7 @@ jobs:
         run: dotnet publish -c release -r linux-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/linux-x64
 
       - name: ZIP Linux output
-        run: zip -r build/Snek_win-x64.zip build/linux-x64
+        run: zip -r build/Snek_linux-x64.zip build/linux-x64
 
       - name: Release
         env:
