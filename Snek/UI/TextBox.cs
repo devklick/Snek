@@ -1,4 +1,4 @@
-namespace Snek;
+namespace Snek.UI;
 
 public class TextBox
 {

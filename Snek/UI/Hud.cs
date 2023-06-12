@@ -2,7 +2,7 @@ using Snek.Extensions;
 using Snek.Events;
 using Snek.Interfaces;
 
-namespace Snek;
+namespace Snek.UI;
 
 /// <summary>
 /// A panel that exists as part of a <see cref="Display"/> where information can be presented.

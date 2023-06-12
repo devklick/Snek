@@ -1,4 +1,4 @@
-namespace Snek;
+namespace Snek.Settings;
 
 public class GameSettings
 {

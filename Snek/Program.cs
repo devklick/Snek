@@ -1,4 +1,6 @@
-﻿namespace Snek;
+﻿using Snek.Settings;
+
+namespace Snek;
 
 class Program
 {
