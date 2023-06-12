@@ -15,8 +15,8 @@ public class GameGrid : IStyled<Cell>, IGrid
     public int Height { get; }
     public Position Offset => Position.Default;
 
-    public ConsoleColor BackgroundColor => ConsoleColor.Black;
-    public ConsoleColor SpriteColor => ConsoleColor.Black;
+    public ConsoleColor BackgroundColor => ConsoleColor.DarkGray;
+    public ConsoleColor SpriteColor => ConsoleColor.DarkGray;
     public char Sprite => ' ';
 
     public List<Cell> Cells { get; } = new();
