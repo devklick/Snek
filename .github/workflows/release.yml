@@ -3,7 +3,7 @@ name: Release on push on main branch
 on:
   push:
     branches:
-      - dev #temporary run on dev, will be changed to main in future
+      - feature/release-workflow #temporary, switch to main
 
 jobs:
   release-snek:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: 16.x
+          node-version: 18.x
 
       - name: Install Node dependencies
         run: npm install
