@@ -13,8 +13,8 @@ public abstract class AudioPlayer
             return new LinuxAudioPlayer();
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return new WindowsAudioPlayer();
-        // else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        //     return new MacPlayer();
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return new OsxAudioPlayer();
         else
             throw new Exception("No implementation exist for the current OS");
     }
