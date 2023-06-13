@@ -22,6 +22,11 @@
             "path": "build/Snek_linux-x64.zip",
             "label": "Snek_${nextRelease.gitTag}_linux-x64.zip",
             "name": "Snek_${nextRelease.gitTag}_linux-x64.zip"
+          },
+          {
+            "path": "build/Snek_osx-x64.zip",
+            "label": "Snek_${nextRelease.gitTag}_osx-x64.zip",
+            "name": "Snek_${nextRelease.gitTag}_osx-x64.zip"
           }
         ]
       }

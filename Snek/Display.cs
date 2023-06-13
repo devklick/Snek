@@ -118,7 +118,8 @@ public class Display
     /// </summary>
     private void InitializeConsole()
     {
-        Console.CursorVisible = false;
+        Console.Clear();
+
         if (OperatingSystem.IsWindows())
         {
             InitializeWindowsConsole();
@@ -127,6 +128,7 @@ public class Display
         {
             InitializeNonWindowsConsole();
         }
+        Console.CursorVisible = false;
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -138,7 +140,6 @@ public class Display
         // We add 1 to the buffer and window height to accommodate for overflow.
         Console.SetWindowSize(_width, _height + 1);
         Console.SetBufferSize(_width, _height + 1);
-        Console.CursorVisible = false;
     }
 
     private void InitializeNonWindowsConsole()
