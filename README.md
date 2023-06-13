@@ -26,6 +26,8 @@ Open a terminal, navigate to the folder you extracted the zip file to (e.g. `cd 
 
 ### OSX
 
+Open a terminal, navigate to the folder you extracted the zip file to (e.g. `cd ~/Downloads/Snek`) and invoke the executable by calling `./Snek`.
+
 # Key Bindings
 
 | Keys           | Description             |
