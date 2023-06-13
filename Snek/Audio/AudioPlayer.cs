@@ -4,6 +4,7 @@ namespace Snek.Audio;
 
 public abstract class AudioPlayer
 {
+    public virtual bool Enabled { get; protected set; }
     public abstract void Play(string file);
 
     public static AudioPlayer Create()

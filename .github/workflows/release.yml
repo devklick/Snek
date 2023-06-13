@@ -51,6 +51,12 @@ jobs:
       - name: ZIP Linux output
         run: cd build/linux-x64 && zip -r ../Snek_linux-x64.zip * && cd ../..
 
+      - name: Run publish OSX
+        run: dotnet publish -c release -r osx-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/osx-x64
+
+      - name: ZIP OSX output
+        run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
