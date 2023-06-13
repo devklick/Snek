@@ -37,8 +37,6 @@ Open a terminal, navigate to the folder you extracted the zip file to (e.g. `cd 
 | Escape         | Toggle pause            |
 | R              | Replay (when game over) |
 | Q              | Quit (when game over)   |
-|                |                         |
-|                |                         |
 
 # Audio
 
