@@ -1,6 +1,8 @@
 using Snek.Audio;
 using Snek.Events;
 using Snek.Extensions;
+using Snek.Settings;
+using Snek.UI;
 
 namespace Snek;
 
@@ -28,7 +30,7 @@ public class Game
 
     public Game(GameSettings settings)
     {
-        _audio = new AudioManager();
+        _audio = new AudioManager(settings.AudioEnabled);
         _settings = settings;
         _ticksPerSecond = _settings.InitialTicksPerSecond;
 
@@ -44,7 +46,7 @@ public class Game
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
         // However we want it's width to the the same as the multiplied grid dimensions.
         // The idea of passing in event's as references isnt great, but it gets the job done.
-        _hud = new Hud(settings.HudWidth, settings.HudHeight, new Position(0, _grid.Width), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
+        _hud = new Hud(settings.HudWidth, settings.HudHeight, new Position(0, _grid.Height), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);

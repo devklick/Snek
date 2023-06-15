@@ -10,7 +10,20 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/Snek/bin/Debug/net7.0/Snek.dll",
-      "args": [],
+      "args": [
+        "--width",
+        "20",
+        "--height",
+        "20",
+        "--initialTicksPerSecond",
+        "6",
+        "--increaseSpeedOnEnemyDestroyed",
+        "true",
+        "--wallCollisionBehavior",
+        "Rebound",
+        "--audioEnabled",
+        "true"
+      ],
       "cwd": "${workspaceFolder}/Snek/bin/Debug/net7.0/",
       "console": "externalTerminal",
       "stopAtEntry": false

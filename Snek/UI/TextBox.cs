@@ -1,10 +1,9 @@
-namespace Snek;
+namespace Snek.UI;
 
 public class TextBox
 {
     public ConsoleColor BackgroundColor { get; }
     public ConsoleColor ForegroundColor { get; }
-    public string? Content => string.IsNullOrEmpty(Label) ? ValueString : $"{Label}: {ValueString}";
     /// <summary>
     /// The position relative to the parent object that this text box will be drawn.
     /// </summary>
@@ -16,21 +15,22 @@ public class TextBox
     /// </remarks>
     public Position Offset { get; }
     public Alignment Align { get; }
-    public string? ValueString { get; set; }
-    public string? Label { get; }
+    public string? Value { get; set; }
 
-    public TextBox(Position offset, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string? label = null, string? value = null)
+    public TextBox(Position offset, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string? value = null)
     {
         Offset = offset;
         BackgroundColor = backgroundColor;
         ForegroundColor = foregroundColor;
         Align = align;
-        Label = label;
-        ValueString = value;
+        Value = value;
     }
 
     public void SetValue(string value)
     {
-        ValueString = value;
+        Value = value;
     }
+
+    public virtual List<string?> GetLines()
+        => new() { Value };
 }

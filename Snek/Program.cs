@@ -1,9 +1,19 @@
-﻿namespace Snek;
+﻿using Snek.Settings;
+
+namespace Snek;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        new Game(GameSettings.Default).Play();
+        var cliArgs = new CliArgs(args);
+
+        if (cliArgs.Help)
+        {
+            cliArgs.HelpInfo.ForEach(Console.WriteLine);
+            Environment.Exit(cliArgs.Error ? 1 : 0);
+        }
+
+        new Game(cliArgs.GameSettings).Play();
     }
 }

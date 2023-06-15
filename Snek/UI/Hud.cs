@@ -2,7 +2,7 @@ using Snek.Extensions;
 using Snek.Events;
 using Snek.Interfaces;
 
-namespace Snek;
+namespace Snek.UI;
 
 /// <summary>
 /// A panel that exists as part of a <see cref="Display"/> where information can be presented.
@@ -60,8 +60,8 @@ public class Hud : IStyled<Cell>, IGrid
 
         BuildHudCells();
 
-        _scoreTextBox = new TextBox(new Position(2, 3), Alignment.Left, BackgroundColor, SpriteColor, "Score");
-        _gamePlayTimerTextBox = new TextBox(new Position(2, 3), Alignment.Right, BackgroundColor, SpriteColor, "Time");
+        _scoreTextBox = new LabelledTextBox(LabelPosition.InFront, new Position(2, 3), Alignment.Left, BackgroundColor, SpriteColor, "Score");
+        _gamePlayTimerTextBox = new LabelledTextBox(LabelPosition.InFront, new Position(2, 3), Alignment.Right, BackgroundColor, SpriteColor, "Time");
         _gameStateTextBox = new TextBox(new Position(0, 1), Alignment.Centre, BackgroundColor, SpriteColor);
     }
 
@@ -89,20 +89,29 @@ public class Hud : IStyled<Cell>, IGrid
 
     private void UpdateTextBox(TextBox textBox, string value)
     {
+        List<string?> lines;
         // if the current value is longer than the new value, we need to "reset" the cells that the new value will not overwrite.
-        if (textBox.ValueString != null && textBox.ValueString.Length > value.Length)
+        if (textBox.Value != null && textBox.Value.Length > value.Length)
         {
-            foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
+            lines = textBox.GetLines();
+            for (int i = 0; i < lines.Count; i++)
             {
-                UpdateCell(cell);
+                foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, lines[i], textBox.BackgroundColor, textBox.ForegroundColor, Sprite))
+                {
+                    UpdateCell(cell);
+                }
             }
         }
 
         textBox.SetValue(value);
 
-        foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, textBox.Content, textBox.BackgroundColor, textBox.ForegroundColor))
+        lines = textBox.GetLines();
+        for (int i = 0; i < lines.Count; i++)
         {
-            UpdateCell(cell);
+            foreach (var cell in GetTextBoxContentAsCells(textBox.Offset, textBox.Align, lines[i], textBox.BackgroundColor, textBox.ForegroundColor))
+            {
+                UpdateCell(cell);
+            }
         }
     }
 
@@ -112,24 +121,24 @@ public class Hud : IStyled<Cell>, IGrid
         CellUpdated?.Invoke(this, new CellUpdatedEventArgs(cell, true));
     }
 
-    private IEnumerable<Cell> GetTextBoxContentAsCells(Position offset, Alignment align, string? content, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
+    private IEnumerable<Cell> GetTextBoxContentAsCells(Position offset, Alignment align, string? text, ConsoleColor backgroundColor, ConsoleColor foregroundColor, char? sprite = null)
     {
-        if (content == null) yield break;
+        if (text == null) yield break;
         var y = offset.Y;
-        for (int i = 0; i < content.Length; i++)
+        for (int i = 0; i < text.Length; i++)
         {
-            var spriteToUse = sprite ?? content.ElementAt(i);
-            var x = GetXPositionForValueAtIndex(offset, align, content, i);
+            var spriteToUse = sprite ?? text.ElementAt(i);
+            var x = GetXPositionForValueAtIndex(offset, align, text, i);
             yield return new Cell(x, y, backgroundColor, foregroundColor, spriteToUse);
         }
     }
 
-    private int GetXPositionForValueAtIndex(Position offset, Alignment align, string content, int index)
+    private int GetXPositionForValueAtIndex(Position offset, Alignment align, string text, int index)
         => align switch
         {
             Alignment.Left => offset.X + index,
-            Alignment.Right => Width - offset.X - content.Length + index,
-            _ => (Width / 2) - (content.Length / 2) + index
+            Alignment.Right => Width - offset.X - text.Length + index,
+            _ => (Width / 2) - (text.Length / 2) + index
         };
 
     private void BuildHudCells()
