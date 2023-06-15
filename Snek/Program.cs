@@ -4,8 +4,21 @@ namespace Snek;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        new Game(GameSettings.Default).Play();
+        var cliArgs = new CliArgs(args);
+
+        if (cliArgs.Help)
+        {
+            cliArgs.HelpInfo.ForEach(Console.WriteLine);
+            Environment.Exit(0);
+        }
+        if (cliArgs.Errors.Any())
+        {
+            cliArgs.Errors.ForEach(Console.WriteLine);
+            Environment.Exit(1);
+        }
+
+        new Game(cliArgs.GameSettings).Play();
     }
 }
