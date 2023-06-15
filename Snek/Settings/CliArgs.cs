@@ -95,7 +95,7 @@ public class CliArgs
     private static string GetEnumTypeInfo(PropertyInfo argProp)
     {
         var values = Enum.GetValues(argProp.PropertyType).Cast<Enum>().Select(s => s.ToString()).ToList();
-        return string.Join(", ", values);
+        return $"[{string.Join(", ", values)}]";
     }
 
     private static IEnumerable<(PropertyInfo argProp, CliArgAttribute attr)> GetArgProps()
