@@ -46,7 +46,7 @@ The sound effects are annoying. Love 'em or hate 'em. Currently there's no way t
 
 # Game options
 
-There are a number of options that can can be configured when starting a game, however the only way to change this at the moment is via the code.
+There are a number of options that can can be configured when starting a game.
 
 | Keys                          | Type    | Description                                                                                                                                                                                                                                          |
 | ----------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -55,6 +55,18 @@ There are a number of options that can can be configured when starting a game, h
 | `InitialTicksPerSecond`         | Number  | The number of times per second the snake will move. This may increase depending on the `IncreaseSpeedOnEnemyDestroyed` setting                                                                                                                       |
 | `IncreaseSpeedOnEnemyDestroyed` | Boolean | Whether or not the snake should get faster every time it destroys an enemy                                                                                                                                                                           |
 | `WallCollisionBehavior`         | Enum    | `GameOver` - The game ends when the snake collides with a wall <br/>`Rebound` - The players snake is reversed and continues in the opposite direction it was facing when it collided with the wall <br/>`Portal` - Allows the player to travel through walls |
+| `EnableAudio` | Boolean | Whether or not sound effects should play                        
+
+To specify custom settings, you must invoke the executable with command line arguments:
+```
+Supported arguments:
+	--width, -w 	[number, min 10, max 80]
+	--height, -h 	[number, min 10, max 80]
+	--initialTicksPerSecond, -s 	[number, min 1, max 50]
+	--increaseSpeedOnEnemyDestroyed, -i 	[boolean, true, false]
+	--wallCollisionBehavior, -c 	[GameOver, Rebound, Portal]
+	--audioEnabled, -a 	[boolean, true, false]
+```
 
 ## Setup UI (future enhancement)
 

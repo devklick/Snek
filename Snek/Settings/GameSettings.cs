@@ -1,4 +1,6 @@
-namespace Snek;
+using System.ComponentModel.DataAnnotations;
+
+namespace Snek.Settings;
 
 public class GameSettings
 {
@@ -8,14 +10,27 @@ public class GameSettings
         Height = 15,
         InitialTicksPerSecond = 8,
         IncreaseSpeedOnEnemyDestroyed = false,
-        WallCollisionBehavior = WallCollisionBehavior.Portal
+        WallCollisionBehavior = WallCollisionBehavior.Portal,
+        AudioEnabled = true
     };
 
+    [CliArg("width", "w"), Range(10, 80)]
     public int Width { get; set; }
+
+    [CliArg("height", "h"), Range(10, 80)]
     public int Height { get; set; }
+
+    [CliArg("initialTicksPerSecond", "s"), Range(1, 50)]
     public int InitialTicksPerSecond { get; set; }
+
+    [CliArg("increaseSpeedOnEnemyDestroyed", "i")]
     public bool IncreaseSpeedOnEnemyDestroyed { get; set; }
+
+    [CliArg("wallCollisionBehavior", "c")]
     public WallCollisionBehavior WallCollisionBehavior { get; set; }
+
+    [CliArg("audioEnabled", "a")]
+    public bool AudioEnabled { get; set; }
 
     public int DisplayWidthMultiplier => 2;
     public int DisplayHeightMultiplier => 1;

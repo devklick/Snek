@@ -1,4 +1,5 @@
 using Snek.Events;
+using Snek.UI;
 
 namespace Snek;
 
@@ -46,7 +47,7 @@ public class Display
     /// <param name="gameGrid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
     /// <param name="widthMultiplier">The number of times to repeat a cell along the `X` axis when drawing it to the display.</param>
     /// <param name="heightMultiplier">The number of times to repeat a cell along the `Y` axis when drawing it to the display.</param>
-    public Display(int width, int height, int widthMultiplier, int heightMultiplier, GameGrid gameGrid, Hud hud)
+    public Display(int width, int height, int widthMultiplier, int heightMultiplier, GameGrid gameGrid, Hud? hud = null)
     {
         _width = width;
         _height = height;
@@ -56,11 +57,14 @@ public class Display
         InitializeConsole();
 
         foreach (var cell in gameGrid.Cells) Draw(cell);
-        foreach (var cell in hud.Cells) Draw(cell, hud.Offset, true);
-
         gameGrid.CellUpdated += OnGameGridCellUpdated;
-        hud.CellUpdated += OnHudCellUpdated;
-        _hudOffset = hud.Offset;
+
+        if (hud != null)
+        {
+            foreach (var cell in hud.Cells) Draw(cell, hud.Offset, true);
+            hud.CellUpdated += OnHudCellUpdated;
+            _hudOffset = hud.Offset;
+        }
     }
 
     /// <summary>
