@@ -11,12 +11,7 @@ class Program
         if (cliArgs.Help)
         {
             cliArgs.HelpInfo.ForEach(Console.WriteLine);
-            Environment.Exit(0);
-        }
-        if (cliArgs.Errors.Any())
-        {
-            cliArgs.Errors.ForEach(Console.WriteLine);
-            Environment.Exit(1);
+            Environment.Exit(cliArgs.Error ? 1 : 0);
         }
 
         new Game(cliArgs.GameSettings).Play();

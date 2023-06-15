@@ -14,16 +14,13 @@ public class GameSettings
         AudioEnabled = true
     };
 
-    [CliArg("width", "w")]
-    [Range(10, 80)]
+    [CliArg("width", "w"), Range(10, 80)]
     public int Width { get; set; }
 
-    [CliArg("height", "h")]
-    [Range(10, 80)]
+    [CliArg("height", "h"), Range(10, 80)]
     public int Height { get; set; }
 
-    [CliArg("initialTicksPerSecond", "s")]
-    [Range(1, 50)]
+    [CliArg("initialTicksPerSecond", "s"), Range(1, 50)]
     public int InitialTicksPerSecond { get; set; }
 
     [CliArg("increaseSpeedOnEnemyDestroyed", "i")]
