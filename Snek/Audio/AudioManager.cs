@@ -3,24 +3,26 @@ namespace Snek.Audio;
 public class AudioManager
 {
     private readonly AudioPlayer _player;
+    public bool Enabled { get; }
 
-    public AudioManager()
+    public AudioManager(bool enabled = true)
     {
+        Enabled = enabled;
         _player = AudioPlayer.Create();
     }
 
     public void PlayPlayerMovedSound()
     {
-        _player.Play("PlayerMoved.wav");
+        if (Enabled) _player.Play("PlayerMoved.wav");
     }
 
     public void PlayEnemyEatenSound()
     {
-        _player.Play("EnemyEaten.wav");
+        if (Enabled) _player.Play("EnemyEaten.wav");
     }
 
     public void PlayPlayerDestroyedSound()
     {
-        _player.Play("PlayerDestroyed.wav");
+        if (Enabled) _player.Play("PlayerDestroyed.wav");
     }
 }
