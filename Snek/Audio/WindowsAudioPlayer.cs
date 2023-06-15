@@ -6,6 +6,7 @@ using Snek.Audio;
 /// </summary>
 public class WindowsAudioPlayer : AudioPlayer
 {
+    public override bool Enabled => true;
 
     [DllImport("winmm.DLL", EntryPoint = "PlaySound", SetLastError = true, CharSet = CharSet.Unicode, ThrowOnUnmappableChar = true)]
     private static extern bool PlaySound(string szSound, IntPtr hMod, PlaySoundFlags flags);
@@ -25,6 +26,7 @@ public class WindowsAudioPlayer : AudioPlayer
 
     public override void Play(string fileName)
     {
+        if (!Enabled) return;
         PlaySound(fileName, IntPtr.Zero, PlaySoundFlags.SND_ASYNC);
     }
 }

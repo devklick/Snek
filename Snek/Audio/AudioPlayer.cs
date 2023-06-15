@@ -4,6 +4,7 @@ namespace Snek.Audio;
 
 public abstract class AudioPlayer
 {
+    public virtual bool Enabled { get; protected set; }
     public abstract void Play(string file);
 
     public static AudioPlayer Create()
@@ -12,8 +13,8 @@ public abstract class AudioPlayer
             return new LinuxAudioPlayer();
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return new WindowsAudioPlayer();
-        // else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        //     return new MacPlayer();
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return new OsxAudioPlayer();
         else
             throw new Exception("No implementation exist for the current OS");
     }
