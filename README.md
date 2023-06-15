@@ -55,6 +55,7 @@ There are a number of options that can can be configured when starting a game.
 | `InitialTicksPerSecond`         | Number  | The number of times per second the snake will move. This may increase depending on the `IncreaseSpeedOnEnemyDestroyed` setting                                                                                                                       |
 | `IncreaseSpeedOnEnemyDestroyed` | Boolean | Whether or not the snake should get faster every time it destroys an enemy                                                                                                                                                                           |
 | `WallCollisionBehavior`         | Enum    | `GameOver` - The game ends when the snake collides with a wall <br/>`Rebound` - The players snake is reversed and continues in the opposite direction it was facing when it collided with the wall <br/>`Portal` - Allows the player to travel through walls |
+| `EnableAudio` | Boolean | Whether or not sound effects should play                        
 
 To specify custom settings, you must invoke the executable with command line arguments:
 ```
