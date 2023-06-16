@@ -14,10 +14,10 @@ public class GameSettings
         AudioEnabled = true
     };
 
-    [CliArg("width", "w"), Range(10, 80)]
+    [CliArg("width", "w"), Range(13, 80)]
     public int Width { get; set; }
 
-    [CliArg("height", "h"), Range(10, 80)]
+    [CliArg("height", "h"), Range(6, 80)]
     public int Height { get; set; }
 
     [CliArg("initialTicksPerSecond", "s"), Range(1, 50)]

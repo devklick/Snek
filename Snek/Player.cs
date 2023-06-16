@@ -13,13 +13,15 @@ public class Player : IStyled<PlayerCell>
     public PlayerCell Head => Cells.First();
     public PlayerCell Tail => Cells.Last();
 
-    public Player(Position position, int initialLength = 5)
+    public Player(Position midPoint, int initialLength = 5, Direction facing = Direction.North)
     {
         Cells = new();
-        Facing = Direction.North;
+        Facing = facing;
         for (var i = 0; i < initialLength; i++)
         {
-            Cells.Add(CreateCell(new(position.X, position.Y + i), flipColors: i == 0, Facing));
+            var x = Facing.IsHorizontal() ? (midPoint.X / 2) + i : midPoint.X;
+            var y = Facing.IsVertical() ? (midPoint.Y / 2) + i : midPoint.Y;
+            Cells.Add(CreateCell(new(x, y), flipColors: i == 0, Facing));
         }
     }
 

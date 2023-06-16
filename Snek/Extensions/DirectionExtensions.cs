@@ -23,10 +23,31 @@ public static class DirectionExtensions
     /// </summary>
     /// <param name="a">The fist direction</param>
     /// <param name="b">The second direction</param>
-    /// <returns>`true` if they are opposite each other, otherwise `false`</returns>
+    /// <returns><c>true</c> if they are opposite each other, otherwise <c>false</c></returns>
     public static bool IsOpposite(this Direction a, Direction b)
         => _opposites[a] == b;
 
+    /// <summary>
+    /// Whether or not the direction looks along the horizontal axis.
+    /// </summary>
+    /// <param name="direction">The direction to be checked</param>
+    /// <returns><c>true</c> if <see cref="Direction.East"/> or <see cref="Direction.West"/>, otherwise <c>false</c></returns>
+    public static bool IsHorizontal(this Direction direction)
+        => direction == Direction.East || direction == Direction.West;
+
+    /// <summary>
+    /// Whether or not the direction looks along the vertical axis.
+    /// </summary>
+    /// <param name="direction">The direction to be checked</param>
+    /// <returns><c>true</c> if <see cref="Direction.North"/> or <see cref="Direction.South"/>, otherwise <c>false</c></returns>
+    public static bool IsVertical(this Direction direction)
+        => !direction.IsHorizontal();
+
+    /// <summary>
+    /// Gets the <see cref="Direction"/> that is opposite the specified <see cref="direction"/>.
+    /// </summary>
+    /// <param name="direction">The direction to be checked.</param>
+    /// <returns>The opposite direction</returns>
     public static Direction GetOpposite(this Direction direction)
         => _opposites[direction];
 
