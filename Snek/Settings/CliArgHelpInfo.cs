@@ -38,10 +38,10 @@ public class CliArgHelpInfo
     {
         if (Type != null)
         {
-            sb.Append($"{_}{_}{Type}");
+            sb.Append($"{_}{_}Type: {Type}");
             if (Validation != null)
             {
-                sb.Append($": {Validation}");
+                sb.Append($" ({Validation})");
             }
             sb.AppendLine();
         }
@@ -65,6 +65,9 @@ public class CliArgHelpInfo
 
     private void AddDefaultValue(StringBuilder sb)
     {
-        sb.AppendLine($"{_}{_}Default: {Default}");
+        if (!string.IsNullOrEmpty(Default))
+        {
+            sb.AppendLine($"{_}{_}Default: {Default}");
+        }
     }
 }

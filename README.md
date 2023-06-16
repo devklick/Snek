@@ -46,28 +46,49 @@ The sound effects are annoying. Love 'em or hate 'em. Currently there's no way t
 
 # Game options
 
-There are a number of options that can can be configured when starting a game.
+There are a number of options that can can be configured when starting a game. The only way to present these options at current is via command line arguments, so the game would have to be launched from the command line rather than by clicking the executable.
 
-| Keys                          | Type    | Description                                                                                                                                                                                                                                          |
-| ----------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Width`                         | Number  | The number of cells across the horizontal axis                                                                                                                                                                                                       |
-| `Height`                        | Number  | The number of cells across the vertical axis                                                                                                                                                                                                         |
-| `InitialTicksPerSecond`         | Number  | The number of times per second the snake will move. This may increase depending on the `IncreaseSpeedOnEnemyDestroyed` setting                                                                                                                       |
-| `IncreaseSpeedOnEnemyDestroyed` | Boolean | Whether or not the snake should get faster every time it destroys an enemy                                                                                                                                                                           |
-| `WallCollisionBehavior`         | Enum    | `GameOver` - The game ends when the snake collides with a wall <br/>`Rebound` - The players snake is reversed and continues in the opposite direction it was facing when it collided with the wall <br/>`Portal` - Allows the player to travel through walls |
-| `EnableAudio` | Boolean | Whether or not sound effects should play                        
+## Supported arguments
+  
+### Display Help
+- Arguments: `--help`, `-h`
+- Description: Shows this help information
 
-To specify custom settings, you must invoke the executable with command line arguments:
-```
-Supported arguments:
-	--width, -w 	[number, min 13, max 80]
-	--height, -h 	[number, min 6, max 80]
-	--initialTicksPerSecond, -s 	[number, min 1, max 50]
-	--increaseSpeedOnEnemyDestroyed, -i 	[boolean, true, false]
-	--wallCollisionBehavior, -c 	[GameOver, Rebound, Portal]
-	--audioEnabled, -a 	[boolean, true, false]
-```
+### Game Width
+- Arguments: `--width`, `-x`
+- Description: The number of cells along the horizontal axis
+- Type: Number (min 13, max 80)
+- Default: 15
 
-## Setup UI (future enhancement)
+### Game Height
+- Arguments: `--height`, `-y`
+- Description: The number of cells along the vertical axis
+- Type: Number (min 6, max 80)
+- Default: 15
 
-In the future I plan to add a small UI that allows you to select the options you want to play the game with. Until then, the only way to try out these different settings is to clone the repo, tweak the code and run it locally. 
+### Initial Game Speed
+- Arguments: `--speed`, `-s`
+- Description: The starting number of times per second the snake will move
+- Type: Number (min 1, max 50)
+- Default: 8
+
+### Increase Speed on Enemy Destroyed
+- Arguments: `--increase-speed`, `-i`
+- Description: Whether or not the snake should get faster every time it destroys an enemy
+- Type: Boolean (True, False)
+- Default: False
+
+### Wall Collision Behavior
+- Arguments: `--collision`, `-c`
+- Description: How the game should behave when the snake collides with a wall
+- Type: Enum (GameOver, Rebound, Portal)
+  - GameOver: The game is over
+  - Rebound: The players snake is reversed and continues traveling in the opposite direction
+  - Portal: The player travels through walls. They will continue moving in the same direction but will emerge from the wall opposite the one they collided with
+- Default: Portal
+
+### Audio Enabled
+- Arguments: `--audio`, `-a`
+- Description: Whether or not sound effects should play
+- Type: Boolean (True, False)
+- Default: True

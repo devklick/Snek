@@ -98,7 +98,7 @@ public class CliArgs
         ?? throw new InvalidDataException("A description is required for all CLI args");
 
     private static (string type, string validation) GetBoolTypeInfo(PropertyInfo _)
-        => ("Boolean", "true, false");
+        => ("Boolean", "True, False");
 
     private static (string type, string validation) GetNumberTypeInfo(PropertyInfo argProp)
     {
