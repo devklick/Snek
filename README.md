@@ -60,8 +60,8 @@ There are a number of options that can can be configured when starting a game.
 To specify custom settings, you must invoke the executable with command line arguments:
 ```
 Supported arguments:
-	--width, -w 	[number, min 10, max 80]
-	--height, -h 	[number, min 10, max 80]
+	--width, -w 	[number, min 13, max 80]
+	--height, -h 	[number, min 6, max 80]
 	--initialTicksPerSecond, -s 	[number, min 1, max 50]
 	--increaseSpeedOnEnemyDestroyed, -i 	[boolean, true, false]
 	--wallCollisionBehavior, -c 	[GameOver, Rebound, Portal]
