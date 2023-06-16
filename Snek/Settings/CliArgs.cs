@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Snek.Settings;
@@ -7,7 +9,7 @@ public class CliArgs
 {
     public GameSettings GameSettings { get; } = GameSettings.Default;
     public bool Help { get; private set; }
-    public List<string> HelpInfo { get; private set; }
+    public CliHelpInfo HelpInfo { get; private set; }
     public bool Error { get; }
     public CliArgs(string[] args)
     {
@@ -15,7 +17,7 @@ public class CliArgs
 
         HelpInfo = GetHelpInfo(argProps);
 
-        if (args.Any(a => a == "--help" || a == "-h"))
+        if (args.Any(a => a == CliHelpInfo.FullName || a == CliHelpInfo.ShortName))
         {
             Help = true;
             return;
@@ -46,56 +48,87 @@ public class CliArgs
         }
     }
 
-    private static List<string> GetHelpInfo(IEnumerable<(PropertyInfo argProp, CliArgAttribute attr)> argProps)
+    private static CliHelpInfo GetHelpInfo(IEnumerable<(PropertyInfo argProp, CliArgAttribute attr)> argProps)
     {
-        var helpInfo = new List<string>() { "Supported arguments:" };
-
+        var helpInfo = new CliHelpInfo();
         foreach (var (argProp, attr) in argProps)
         {
-            var argNames = $"{attr.FullName}, {attr.ShortName} ";
-            var argType = "";
+            var description = GetDescription(argProp);
+            var type = "";
+            var validation = "";
+            var allowedValues = new List<(string, string)>();
             if (argProp.PropertyType.IsEnum)
             {
-                argType = GetEnumTypeInfo(argProp);
+                (type, validation, allowedValues) = GetEnumTypeInfo(argProp);
             }
             else if (argProp.PropertyType == typeof(int))
             {
-                argType = GetNumberTypeInfo(argProp);
+                (type, validation) = GetNumberTypeInfo(argProp);
             }
             else if (argProp.PropertyType == typeof(bool))
             {
-                argType = GetBoolTypeInfo(argProp);
+                (type, validation) = GetBoolTypeInfo(argProp);
             }
             else
             {
                 throw new NotImplementedException($"Unsupported type ${argProp.PropertyType} for CliArgAttribute");
             }
+            var cliArg = new CliArgHelpInfo(attr.FullName, attr.ShortName, description)
+            {
+                Default = GetDefault(argProp),
+                Type = type,
+                Validation = validation,
+                AllowedValues = allowedValues
+            };
 
-            helpInfo.Add($"\t{argNames}\t{argType}");
+
+            helpInfo.Add(cliArg);
         }
 
         return helpInfo;
     }
 
-    private static string GetBoolTypeInfo(PropertyInfo _)
-        => "[boolean, true, false]";
-
-    private static string GetNumberTypeInfo(PropertyInfo argProp)
+    private static string? GetDefault(PropertyInfo prop)
     {
-        var argInfo = $"[number";
+        return prop.GetValue(GameSettings.Default)?.ToString();
+    }
+
+    private static string GetDescription(MemberInfo prop)
+        => prop.GetCustomAttribute<DescriptionAttribute>()?.Description
+        ?? throw new InvalidDataException("A description is required for all CLI args");
+
+    private static (string type, string validation) GetBoolTypeInfo(PropertyInfo _)
+        => ("Boolean", "true, false");
+
+    private static (string type, string validation) GetNumberTypeInfo(PropertyInfo argProp)
+    {
+        var type = "Number";
+        var validation = "";
+
         var range = argProp.GetCustomAttribute<RangeAttribute>();
         if (range != null)
         {
-            argInfo = $"{argInfo}, min {range.Minimum}, max {range.Maximum}";
+            validation = $"min {range.Minimum}, max {range.Maximum}";
         }
-        argInfo += "]";
-        return argInfo;
+        return (type, validation);
     }
 
-    private static string GetEnumTypeInfo(PropertyInfo argProp)
+    [UnconditionalSuppressMessage("AssemblyLoadTrimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "Seems to work, so it's not a problem until it's a problem")]
+    [UnconditionalSuppressMessage("AssemblyLoadTrimming", "IL2075:RequiresUnreferencedCode",
+        Justification = "Seems to work, so it's not a problem until it's a problem")]
+    private static (string type, string validation, List<(string name, string description)> allowedValues) GetEnumTypeInfo(PropertyInfo argProp)
     {
-        var values = Enum.GetValues(argProp.PropertyType).Cast<Enum>().Select(s => s.ToString()).ToList();
-        return $"[{string.Join(", ", values)}]";
+        var names = new List<string>();
+        var allowedValues = Enum.GetValues(argProp.PropertyType).Cast<Enum>().Select(e =>
+        {
+            var name = e.ToString();
+            names.Add(name);
+            var members = argProp.PropertyType.GetMember(name);
+            var description = GetDescription(members.First());
+            return (name, description);
+        }).ToList();
+        return ("Enum", $"{string.Join(", ", names)}", allowedValues);
     }
 
     private static IEnumerable<(PropertyInfo argProp, CliArgAttribute attr)> GetArgProps()
