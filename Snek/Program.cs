@@ -10,7 +10,7 @@ class Program
 
         if (cliArgs.Help)
         {
-            cliArgs.HelpInfo.ForEach(Console.WriteLine);
+            Console.WriteLine(cliArgs.HelpInfo.ToString());
             Environment.Exit(cliArgs.Error ? 1 : 0);
         }
 

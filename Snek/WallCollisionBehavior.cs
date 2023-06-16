@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace Snek;
 
 public enum WallCollisionBehavior
@@ -5,15 +7,17 @@ public enum WallCollisionBehavior
     /// <summary>
     /// The game is over.
     /// </summary>
+    [Description("The game is over")]
     GameOver,
     /// <summary>
-    /// The players snake is reversed, so there head is now where their tail was 
-    /// and vis versa, and they're now facing the opposite direction.
+    /// The players snake is reversed and continues traveling in the opposite direction.
     /// </summary>
+    [Description("The players snake is reversed and continues traveling in the opposite direction")]
     Rebound,
     /// <summary>
     /// The player travels through walls. They will continue moving in the same direction
-    /// but will emerge from the opposite wall they collided with.
+    /// but will emerge from the wall opposite the one they collided with.
     /// </summary>
+    [Description("The player travels through walls. They will continue moving in the same direction but will emerge from the wall opposite the one they collided with")]
     Portal
 }

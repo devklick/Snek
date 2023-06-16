@@ -11,10 +11,11 @@
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/Snek/bin/Debug/net7.0/Snek.dll",
       "args": [
+        "-h",
         "--width",
-        "20",
+        "13",
         "--height",
-        "20",
+        "7",
         "--initialTicksPerSecond",
         "6",
         "--increaseSpeedOnEnemyDestroyed",
