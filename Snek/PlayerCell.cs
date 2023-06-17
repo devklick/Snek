@@ -36,4 +36,7 @@ public class PlayerCell : Cell
     {
         Facing = facing;
     }
+
+    public override string ToString()
+        => $"{Position}:{Facing}";
 }

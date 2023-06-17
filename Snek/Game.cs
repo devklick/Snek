@@ -1,6 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using Snek.Audio;
 using Snek.Events;
 using Snek.Extensions;
+using Snek.Infrastructure;
 using Snek.Settings;
 using Snek.UI;
 
@@ -27,11 +29,17 @@ public class Game
     private int Delay => (int)((float)1 / _ticksPerSecond * 1000);
     private readonly GameSettings _settings;
     private readonly AudioManager _audio;
+    private readonly FileLogger _logger;
 
     public Game(GameSettings settings)
     {
-        _audio = new AudioManager(settings.AudioEnabled);
         _settings = settings;
+        _settings.ToString();
+
+        _logger = new FileLogger();
+        _logger.LogInfo("Setting up game", _settings);
+
+        _audio = new AudioManager(settings.AudioEnabled);
         _ticksPerSecond = _settings.InitialTicksPerSecond;
 
         // Set up the game timer to tick every 1 second
@@ -51,35 +59,8 @@ public class Game
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);
 
-        // Since we've got the display configured and rendered, we can trigger the update of the various info that gets drawn to the HUD.
-        SetGameState(GameState.Initializing);
-        SetScore(0);
-        _timer.Reset();
-
-        // Next, the player needs to be created an added to the grid.
-        // Doing so will update the display with the player cells.
-        _player = new(new Position(_settings.Width / 2, _settings.Height / 2));
-        _grid.Add(_player);
-
-        // Now we can check all available positions, determine where the enemy should be positioned,
-        // And add the enemy to the grid. Doing so will update the display with the enemy cell.
-        _enemy = new(_grid.GetRandomAvailablePosition());
-        _grid.Add(_enemy);
-    }
-
-    private void Reset()
-    {
-        _timer.Reset();
-        _grid.Reset();
-        _hud.Reset();
-        SetGameState(GameState.Initializing);
-        SetScore(0);
-        _timer.Reset();
-        _player = new(new Position(_settings.Width / 2, _settings.Height / 2));
-        _grid.Add(_player);
-        _enemy = new(_grid.GetRandomAvailablePosition());
-        _grid.Add(_enemy);
-        _ticksPerSecond = _settings.InitialTicksPerSecond;
+        // Finally, we initialize the various game components that get re-initialized on replay.
+        Initialize();
     }
 
     /// <summary>
@@ -92,14 +73,51 @@ public class Game
         ReplayLoop();
     }
 
+    [MemberNotNull(nameof(_player)), MemberNotNull(nameof(_enemy))]
+    private void Initialize()
+    {
+        _logger.Initialize();
+
+        _grid.Reset();
+        _hud.Reset();
+
+        // Since we've got the display configured and rendered, we can trigger the update of the various info that gets drawn to the HUD.
+        SetGameState(GameState.Initializing);
+        SetScore(0);
+        _timer.Reset();
+
+        // Next, the player needs to be created an added to the grid.
+        // Doing so will update the display with the player cells.
+        _player = new(_logger, new Position(_settings.Width / 2, _settings.Height / 2));
+        _logger.LogInfo(_player.ToString());
+        _grid.Add(_player);
+
+        // Now we can check all available positions, determine where the enemy should be positioned,
+        // And add the enemy to the grid. Doing so will update the display with the enemy cell.
+        _enemy = new(_grid.GetRandomAvailablePosition());
+        _logger.LogInfo(_enemy.ToString());
+        _grid.Add(_enemy);
+
+        _ticksPerSecond = _settings.InitialTicksPerSecond;
+    }
+
     private void GameLoop()
     {
         SetGameState(GameState.Playing);
+        _logger.LogInfo("Gameplay started");
+
         while (!_state.IsGameplayOver())
         {
+            _logger.LogInfo("Begin wait");
             Thread.Sleep(Delay);
+            _logger.LogInfo("End wait");
 
             var input = _input.GetInput(_state);
+
+            if (input != null)
+            {
+                _logger.LogInfo($"Player input {input}");
+            }
 
             if (input == PlayerInput.TogglePause)
             {
@@ -123,10 +141,16 @@ public class Game
         {
             var input = _input.GetInput(_state);
 
+            if (input != null)
+            {
+                _logger.LogInfo($"Player input {input}");
+            }
+
             if (input == PlayerInput.Replay)
             {
+                _logger.LogInfo($"Initializing replay");
                 SetGameState(GameState.Initializing);
-                Reset();
+                Initialize();
                 Play();
             }
             else if (input == PlayerInput.Quit)
@@ -161,9 +185,17 @@ public class Game
     /// <param name="direction">The direction the player wants to face</param>
     private void HandleChangeDirection(Direction direction)
     {
-        if (!_player.CanFace(direction)) return;
+        _logger.LogInfo(_player.ToString());
+        _logger.LogInfo($"Player wants to face {direction}");
+
+        if (!_player.CanFace(direction))
+        {
+            _logger.LogInfo($"Player unable to face {direction}");
+            return;
+        }
 
         _grid.SetPlayerFacing(direction);
+        _logger.LogInfo($"Player now facing {direction}");
 
         _audio.PlayPlayerMovedSound();
     }
@@ -179,15 +211,18 @@ public class Game
     private void Tick()
     {
         var nextHeadPosition = _player.NextHeadPosition();
+        _logger.LogInfo($"Next head position is {nextHeadPosition}");
 
         if (!_grid.IsInBounds(nextHeadPosition))
         {
+            _logger.LogInfo("Next head position is out of bounds");
             HandleWallCollision(nextHeadPosition);
             return;
         }
 
         if (_player.IsOccupyingPosition(nextHeadPosition, true))
         {
+            _logger.LogInfo("Player collided with self");
             _audio.PlayPlayerDestroyedSound();
             SetGameState(GameState.GameOver);
             return;
@@ -197,6 +232,7 @@ public class Game
 
         if (EnemyDestroyed())
         {
+            _logger.LogInfo("Enemy destroyed");
             HandleEnemyDestroyed(oldTailPosition);
         }
     }
@@ -206,14 +242,17 @@ public class Game
         switch (_settings.WallCollisionBehavior)
         {
             case WallCollisionBehavior.Rebound:
+                _logger.LogInfo("Rebounding off wall");
                 _grid.ReversePlayer();
                 break;
             case WallCollisionBehavior.Portal:
                 _grid.PortalPlayer(nextHeadPosition);
+                _logger.LogInfo("Portalling through wall");
                 break;
 
             case WallCollisionBehavior.GameOver:
             default:
+                _logger.LogInfo("Crashed into wall");
                 SetGameState(GameState.GameOver);
                 break;
         }
@@ -237,7 +276,9 @@ public class Game
 
         if (_grid.AvailablePositions.Any())
         {
-            _enemy = new(_grid.GetRandomAvailablePosition());
+            var newPosition = _grid.GetRandomAvailablePosition();
+            _logger.LogInfo($"New enemy being placed at {newPosition}");
+            _enemy = new(newPosition);
             _grid.Add(_enemy);
 
             SetScore(_score + 1);
@@ -245,10 +286,12 @@ public class Game
             if (_settings.IncreaseSpeedOnEnemyDestroyed)
             {
                 _ticksPerSecond++;
+                _logger.LogInfo($"Speed increased to {_ticksPerSecond} ticks per second");
             }
         }
         else
         {
+            _logger.LogInfo("Snake takes up 100% of the grid");
             SetGameState(GameState.Won);
         }
     }
@@ -261,6 +304,7 @@ public class Game
     {
         _score = score;
         ScoreUpdated?.Invoke(this, new ScoreUpdatedEventArgs(score));
+        _logger.LogInfo($"Score set to {_score}");
     }
 
     /// <summary>
@@ -281,6 +325,7 @@ public class Game
                 break;
         }
         _state = state;
+        _logger.LogInfo($"Game state updated to {_state}");
         GameStateUpdated?.Invoke(this, new(_state));
     }
 }

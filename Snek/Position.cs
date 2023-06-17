@@ -1,6 +1,6 @@
 namespace Snek;
 
-public struct Position
+public readonly struct Position
 {
     /// <summary>
     /// The position along the X (horizontal) axis.
@@ -21,7 +21,6 @@ public struct Position
         X = x;
         Y = y;
     }
-
 
     /// <summary>
     /// Gives the ability to perform a comparison between the current instance of the Position class with another.
@@ -76,4 +75,16 @@ public struct Position
         hash.Add(Y);
         return hash.ToHashCode();
     }
+
+    public override string ToString()
+        => $"x{X}y{Y}";
+
+    public Position GetNeighbor(Direction direction) => direction switch
+    {
+        Direction.North => new Position(X, Y - 1),
+        Direction.East => new Position(X + 1, Y),
+        Direction.South => new Position(X, Y + 1),
+        Direction.West => new Position(X - 1, Y),
+        _ => throw new NotImplementedException($"Direction {direction} not supported"),
+    };
 }

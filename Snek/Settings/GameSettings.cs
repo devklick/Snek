@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace Snek.Settings;
 
@@ -12,7 +13,8 @@ public class GameSettings
         InitialTicksPerSecond = 8,
         IncreaseSpeedOnEnemyDestroyed = false,
         WallCollisionBehavior = WallCollisionBehavior.Portal,
-        AudioEnabled = true
+        AudioEnabled = true,
+        DebugLogging = false
     };
 
     [CliArg("width", "x"), Range(13, 80)]
@@ -35,6 +37,10 @@ public class GameSettings
     [Description("How the game should behave when the snake collides with a wall")]
     public WallCollisionBehavior WallCollisionBehavior { get; set; }
 
+    [CliArg("debug", "d")]
+    [Description("Whether or not to log events to file")]
+    public bool DebugLogging { get; set; }
+
     [CliArg("audio", "a")]
     [Description("Whether or not sound effects should play")]
     public bool AudioEnabled { get; set; }
@@ -45,4 +51,35 @@ public class GameSettings
     public int DisplayHeight => (DisplayHeightMultiplier * Height) + HudHeight;
     public int HudWidth => DisplayWidth;
     public int HudHeight => DisplayHeightMultiplier * 5;
+
+    public override string ToString()
+    {
+        var parts = new[]
+        {
+            GetProp(x => x.Width),
+            GetProp(x => x.Height),
+            GetProp(x => x.InitialTicksPerSecond),
+            GetProp(x => x.IncreaseSpeedOnEnemyDestroyed),
+            GetProp(x => x.WallCollisionBehavior),
+            GetProp(x => x.AudioEnabled),
+            GetProp(x => x.DisplayWidthMultiplier),
+            GetProp(x => x.DisplayHeightMultiplier),
+            GetProp(x => x.DisplayWidth),
+            GetProp(x => x.DisplayHeight),
+            GetProp(x => x.HudWidth),
+            GetProp(x => x.HudHeight),
+        };
+        return string.Join(",", parts);
+    }
+
+    private string GetProp(Expression<Func<GameSettings, object>> exp)
+    {
+        var name = ""; //...?
+        if (exp.Body is MemberExpression memberExpression)
+        {
+            name = memberExpression.Member.Name;
+        }
+        var value = exp.Compile().Invoke(this);
+        return $"{name}={value}";
+    }
 }

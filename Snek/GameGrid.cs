@@ -148,6 +148,7 @@ public class GameGrid : IStyled<Cell>, IGrid
         ArgumentNullException.ThrowIfNull(_player);
         _player.Face(direction);
         OnCellUpdated(_player.CreateCell(_player.Head.Position, true, direction));
+
     }
 
     public Cell CreateCell(Position position)

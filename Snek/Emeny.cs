@@ -22,4 +22,7 @@ public class Enemy : IStyled<Cell>
 
     public Cell CreateCell(Position position)
         => new(position, BackgroundColor, SpriteColor, Sprite);
+
+    public override string ToString()
+        => $"Enemy at position {Cell.Position}";
 }
