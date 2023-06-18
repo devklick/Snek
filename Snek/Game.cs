@@ -38,7 +38,7 @@ public class Game
         // TODO: Remove after fixing issue with expression in GameSettings.ToString()
         _settings.ToString();
 
-        _logger = new FileLogger();
+        _logger = new FileLogger(_settings.DebugLogging);
         _logger.LogInfo("Setting up game", _settings);
 
         _audio = new AudioManager(settings.AudioEnabled);
