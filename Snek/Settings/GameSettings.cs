@@ -13,9 +13,9 @@ public class GameSettings
         Height = 15,
         InitialTicksPerSecond = 8,
         IncreaseSpeedOnEnemyDestroyed = false,
-        WallCollisionBehavior = WallCollisionBehavior.Portal,
+        WallCollisionBehavior = WallCollisionBehavior.GameOver,
         AudioEnabled = true,
-        DebugLogging = false
+        DebugLogging = false,
     };
 
     [CliArg("width", "x"), Range(13, 80)]
