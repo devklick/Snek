@@ -1,4 +1,4 @@
-namespace Snek;
+namespace Snek.Entities;
 
 public class PlayerCell : Cell
 {

@@ -1,6 +1,6 @@
 using Snek.Interfaces;
 
-namespace Snek;
+namespace Snek.Entities;
 
 /// <summary>
 /// The object that the player is trying to target and consume.

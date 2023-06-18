@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Snek.Infrastructure;
 
@@ -16,28 +17,28 @@ public class FileLogger
         Initialize(logLevels);
     }
 
-    public void Log(LogLevel logLevel, string message, object[] parameters)
+    public void Log(LogLevel logLevel, string eventType, string message, object[] parameters)
     {
         if (!_enabled || !_logLevels.Contains(logLevel)) return;
         Directory.CreateDirectory(_path);
 
         var filePath = Path.Join(_path, _fileName);
-        var logMessage = PrepareLogMessage(logLevel, message, parameters);
+        var logMessage = PrepareLogMessage(logLevel, eventType, message, parameters);
 
         File.AppendAllLines(filePath, new[] { logMessage });
     }
 
-    public void LogDebug(string message, params object[] parameters)
-        => Log(LogLevel.Debug, message, parameters);
+    public void LogDebug(string eventType, string message, params object[] parameters)
+        => Log(LogLevel.Debug, eventType, message, parameters);
 
-    public void LogInfo(string message, params object[] parameters)
-        => Log(LogLevel.Info, message, parameters);
+    public void LogInfo(string eventType, string message, params object[] parameters)
+        => Log(LogLevel.Info, eventType, message, parameters);
 
-    public void LogError(string message, params object[] parameters)
-        => Log(LogLevel.Error, message, parameters);
+    public void LogError(string eventType, string message, params object[] parameters)
+        => Log(LogLevel.Error, eventType, message, parameters);
 
-    private static string PrepareLogMessage(LogLevel logLevel, string message, params object[] parameters)
-        => $"{DateTime.Now:yyyy-MM-dd_HH:mm:ss.fffff} | {logLevel} | {message} | {string.Join(",", parameters.Select(p => p.ToString()).ToArray())}";
+    private static string PrepareLogMessage(LogLevel logLevel, string eventType, string message, params object[] parameters)
+        => $"{DateTime.Now:yyyy-MM-dd_HH:mm:ss.fffff} | {logLevel} | {eventType} | {message} | {string.Join(",", parameters.Select(p => p.ToString()).ToArray())}";
 
     [MemberNotNull(nameof(_path)), MemberNotNull(nameof(_fileName)), MemberNotNull(nameof(_logLevels))]
     public void Initialize(params LogLevel[] logLevels)

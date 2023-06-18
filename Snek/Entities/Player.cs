@@ -1,8 +1,9 @@
+using System.Runtime.CompilerServices;
 using Snek.Extensions;
 using Snek.Infrastructure;
 using Snek.Interfaces;
 
-namespace Snek;
+namespace Snek.Entities;
 
 public class Player : IStyled<PlayerCell>
 {
@@ -26,19 +27,19 @@ public class Player : IStyled<PlayerCell>
             var y = Facing.IsVertical() ? (midPoint.Y / 2) + i : midPoint.Y;
             Cells.Add(CreateCell(new(x, y), flipColors: i == 0, Facing));
         }
-        LogSelf();
     }
 
     public bool CanFace(Direction direction)
     {
+        LogSelf();
         var willCollideWithNext = Head.Position.GetNeighbor(direction) == Cells.ElementAt(1).Position;
         if (willCollideWithNext)
         {
-            _logger.LogInfo($"Player cannot face {direction} as it would collide with the second cell");
+            _logger.LogInfo(GetLogEventType(), $"Player cannot face direction {direction} without colliding with cell 2");
             return false;
         }
         var result = !direction.IsOpposite(Facing);
-        _logger.LogInfo($"Player facing {Facing}, {(result ? "can" : "can not")} face {direction}");
+        _logger.LogInfo(GetLogEventType(), $"Player facing {Facing}, {(result ? "can" : "can not")} face {direction}");
         return result;
     }
 
@@ -92,7 +93,7 @@ public class Player : IStyled<PlayerCell>
 
         Face(nextHeadFacing);
 
-        _logger.LogInfo("Player reversed");
+        _logger.LogInfo(GetLogEventType(), "Player reversed");
         LogSelf();
     }
 
@@ -140,17 +141,17 @@ public class Player : IStyled<PlayerCell>
             nextHeadFacing = directionOfTravel.GetOpposite();
             var message = $"Player would instantly collide with self if facing it's natural opposite direction, {Facing.GetOpposite()}. ";
             message += $"instead face the opposite direction that the tail is currently traveling in, {nextHeadFacing}";
-            _logger.LogInfo(message);
+            _logger.LogInfo(GetLogEventType(), message);
         }
         else
         {
-            _logger.LogInfo($"Player can face it's natural opposite direction {nextHeadFacing}");
+            _logger.LogInfo(GetLogEventType(), $"Player can face it's natural opposite direction {nextHeadFacing}");
         }
 
         return nextHeadFacing;
     }
     private void LogSelf()
-        => _logger.LogInfo(ToString());
+        => _logger.LogInfo(GetLogEventType(), ToString());
 
     private static Direction GetDirectionOfTravel(Position first, Position second)
     {
@@ -160,4 +161,7 @@ public class Player : IStyled<PlayerCell>
         if (first.Y < second.Y) return Direction.South;
         throw new NotImplementedException("No implementation for cells that are on the position");
     }
+
+    private string GetLogEventType([CallerMemberName] string memberName = "")
+        => $"{nameof(Player)}.{memberName}";
 }

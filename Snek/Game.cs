@@ -1,8 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Snek.Audio;
+using Snek.Entities;
 using Snek.Events;
 using Snek.Extensions;
 using Snek.Infrastructure;
+using Snek.Input;
 using Snek.Settings;
 using Snek.UI;
 
@@ -34,12 +37,8 @@ public class Game
     public Game(GameSettings settings)
     {
         _settings = settings;
-
-        // TODO: Remove after fixing issue with expression in GameSettings.ToString()
-        _settings.ToString();
-
         _logger = new FileLogger(_settings.DebugLogging);
-        _logger.LogInfo("Setting up game", _settings);
+        _logger.LogInfo(nameof(Initialize), "Setting up game", _settings);
 
         _audio = new AudioManager(settings.AudioEnabled);
         _ticksPerSecond = _settings.InitialTicksPerSecond;
@@ -76,9 +75,9 @@ public class Game
     }
 
     [MemberNotNull(nameof(_player)), MemberNotNull(nameof(_enemy))]
-    private void Initialize()
+    private void Initialize(bool initLogs = false)
     {
-        _logger.Initialize();
+        if (initLogs) _logger.Initialize();
 
         _grid.Reset();
         _hud.Reset();
@@ -90,35 +89,38 @@ public class Game
 
         // Next, the player needs to be created an added to the grid.
         // Doing so will update the display with the player cells.
-        _player = new(_logger, new Position(_settings.Width / 2, _settings.Height / 2));
-        _logger.LogInfo(_player.ToString());
-        _grid.Add(_player);
+        InitializePlayer();
 
         // Now we can check all available positions, determine where the enemy should be positioned,
         // And add the enemy to the grid. Doing so will update the display with the enemy cell.
-        _enemy = new(_grid.GetRandomAvailablePosition());
-        _logger.LogInfo(_enemy.ToString());
-        _grid.Add(_enemy);
+        InitializeEnemy();
 
         _ticksPerSecond = _settings.InitialTicksPerSecond;
+    }
+
+    [MemberNotNull(nameof(_player))]
+    private void InitializePlayer()
+    {
+        _player = new(_logger, new Position(_settings.Width / 2, _settings.Height / 2));
+        _logger.LogInfo(GetLogEventType(), "Adding player to grid", _player);
+        _grid.Add(_player);
     }
 
     private void GameLoop()
     {
         SetGameState(GameState.Playing);
-        _logger.LogInfo("Gameplay started");
 
         while (!_state.IsGameplayOver())
         {
-            _logger.LogInfo("Begin wait");
+            _logger.LogInfo(GetLogEventType(), "Begin wait", Delay);
             Thread.Sleep(Delay);
-            _logger.LogInfo("End wait");
+            _logger.LogInfo(GetLogEventType(), "End wait");
 
             var input = _input.GetInput(_state);
 
             if (input != null)
             {
-                _logger.LogInfo($"Player input {input}");
+                _logger.LogInfo(GetLogEventType(), $"Player input captured", input);
             }
 
             if (input == PlayerInput.TogglePause)
@@ -145,14 +147,14 @@ public class Game
 
             if (input != null)
             {
-                _logger.LogInfo($"Player input {input}");
+                _logger.LogInfo(GetLogEventType(), "Player input captured", input);
             }
 
             if (input == PlayerInput.Replay)
             {
-                _logger.LogInfo($"Initializing replay");
+                _logger.LogInfo(GetLogEventType(), "Initializing replay");
                 SetGameState(GameState.Initializing);
-                Initialize();
+                Initialize(true);
                 Play();
             }
             else if (input == PlayerInput.Quit)
@@ -187,17 +189,17 @@ public class Game
     /// <param name="direction">The direction the player wants to face</param>
     private void HandleChangeDirection(Direction direction)
     {
-        _logger.LogInfo(_player.ToString());
-        _logger.LogInfo($"Player wants to face {direction}");
+        _logger.LogInfo(GetLogEventType(), "Checking if player can change direction", direction, _player);
 
         if (!_player.CanFace(direction))
         {
-            _logger.LogInfo($"Player unable to face {direction}");
+            _logger.LogInfo(GetLogEventType(), "Can not face direction", direction);
             return;
         }
 
         _grid.SetPlayerFacing(direction);
-        _logger.LogInfo($"Player now facing {direction}");
+
+        _logger.LogInfo(GetLogEventType(), $"Player direction changed", direction);
 
         _audio.PlayPlayerMovedSound();
     }
@@ -213,18 +215,18 @@ public class Game
     private void Tick()
     {
         var nextHeadPosition = _player.NextHeadPosition();
-        _logger.LogInfo($"Next head position is {nextHeadPosition}");
+        _logger.LogInfo(GetLogEventType(), "Next head position determined", nextHeadPosition);
 
         if (!_grid.IsInBounds(nextHeadPosition))
         {
-            _logger.LogInfo("Next head position is out of bounds");
+            _logger.LogInfo(GetLogEventType(), "Next head position is out of bounds");
             HandleWallCollision(nextHeadPosition);
             return;
         }
 
         if (_player.IsOccupyingPosition(nextHeadPosition, true))
         {
-            _logger.LogInfo("Player collided with self");
+            _logger.LogInfo(GetLogEventType(), "Player collided with self");
             _audio.PlayPlayerDestroyedSound();
             SetGameState(GameState.GameOver);
             return;
@@ -234,7 +236,7 @@ public class Game
 
         if (EnemyDestroyed())
         {
-            _logger.LogInfo("Enemy destroyed");
+            _logger.LogInfo(GetLogEventType(), "Enemy destroyed");
             HandleEnemyDestroyed(oldTailPosition);
         }
     }
@@ -244,17 +246,17 @@ public class Game
         switch (_settings.WallCollisionBehavior)
         {
             case WallCollisionBehavior.Rebound:
-                _logger.LogInfo("Rebounding off wall");
+                _logger.LogInfo(GetLogEventType(), "Rebounding off wall");
                 _grid.ReversePlayer();
                 break;
             case WallCollisionBehavior.Portal:
                 _grid.PortalPlayer(nextHeadPosition);
-                _logger.LogInfo("Portalling through wall");
+                _logger.LogInfo(GetLogEventType(), "Portalling through wall");
                 break;
 
             case WallCollisionBehavior.GameOver:
             default:
-                _logger.LogInfo("Crashed into wall");
+                _logger.LogInfo(GetLogEventType(), "Crashed into wall");
                 SetGameState(GameState.GameOver);
                 break;
         }
@@ -276,25 +278,32 @@ public class Game
         _grid.ExtendPlayerTail(oldTailPosition);
         _audio.PlayEnemyEatenSound();
 
+        SetScore(_score + 1);
+
+        if (_settings.IncreaseSpeedOnEnemyDestroyed)
+        {
+            _ticksPerSecond++;
+            _logger.LogInfo(GetLogEventType(), $"Speed increased to {_ticksPerSecond} ticks per second");
+        }
+
+        InitializeEnemy();
+    }
+
+    [MemberNotNull(nameof(_enemy))]
+    private void InitializeEnemy()
+    {
         if (_grid.AvailablePositions.Any())
         {
             var newPosition = _grid.GetRandomAvailablePosition();
-            _logger.LogInfo($"New enemy being placed at {newPosition}");
+            _logger.LogInfo(GetLogEventType(), $"New enemy being placed at {newPosition}");
             _enemy = new(newPosition);
             _grid.Add(_enemy);
-
-            SetScore(_score + 1);
-
-            if (_settings.IncreaseSpeedOnEnemyDestroyed)
-            {
-                _ticksPerSecond++;
-                _logger.LogInfo($"Speed increased to {_ticksPerSecond} ticks per second");
-            }
         }
         else
         {
-            _logger.LogInfo("Snake takes up 100% of the grid");
+            _logger.LogInfo(GetLogEventType(), "Snake takes up 100% of the grid");
             SetGameState(GameState.Won);
+            _enemy = new(Position.Default);
         }
     }
 
@@ -306,7 +315,7 @@ public class Game
     {
         _score = score;
         ScoreUpdated?.Invoke(this, new ScoreUpdatedEventArgs(score));
-        _logger.LogInfo($"Score set to {_score}");
+        _logger.LogInfo(GetLogEventType(), $"Score updated", _score);
     }
 
     /// <summary>
@@ -327,7 +336,10 @@ public class Game
                 break;
         }
         _state = state;
-        _logger.LogInfo($"Game state updated to {_state}");
+        _logger.LogInfo(GetLogEventType(), $"Game state updated", _state);
         GameStateUpdated?.Invoke(this, new(_state));
     }
+
+    private string GetLogEventType([CallerMemberName] string memberName = "")
+        => $"{nameof(Game)}.{memberName}";
 }

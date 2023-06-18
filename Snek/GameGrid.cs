@@ -1,3 +1,4 @@
+using Snek.Entities;
 using Snek.Events;
 using Snek.Interfaces;
 
