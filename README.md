@@ -92,3 +92,9 @@ There are a number of options that can can be configured when starting a game. T
 - Description: Whether or not sound effects should play
 - Type: Boolean (True, False)
 - Default: True
+
+### Debug Logs
+- Arguments: `--debug`, `-d`
+- Description: Whether or not to log events to file
+- Type: Boolean (True, False)
+- Default: False
