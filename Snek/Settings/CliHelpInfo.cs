@@ -4,7 +4,6 @@ namespace Snek.Settings;
 
 public class CliHelpInfo
 {
-    public static readonly string Description = " A terminal version of the classic mobile game, Snake.";
     public static readonly string FullName = "--help";
     public static readonly string ShortName = "-h";
     public List<CliArgHelpInfo> ArgsInfo = new()
@@ -15,9 +14,6 @@ public class CliHelpInfo
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.AppendLine(Description);
-        sb.AppendLine();
-
         sb.AppendLine("Supported arguments:");
 
         foreach (var arg in ArgsInfo)

@@ -1,4 +1,5 @@
-﻿using Snek.Settings;
+﻿using System.Diagnostics.CodeAnalysis;
+using Snek.Settings;
 
 namespace Snek;
 
@@ -8,12 +9,36 @@ class Program
     {
         var cliArgs = new CliArgs(args);
 
-        if (cliArgs.Help)
-        {
-            Console.WriteLine(cliArgs.HelpInfo.ToString());
-            Environment.Exit(cliArgs.Error ? 1 : 0);
-        }
+        HandleArgs(cliArgs);
 
         new Game(cliArgs.GameSettings).Play();
+    }
+
+    private static void HandleArgs(CliArgs cliArgs)
+    {
+        if (cliArgs.RequiresHelp)
+        {
+            HandleHelp(cliArgs);
+        }
+        if (cliArgs.HasError)
+        {
+            HandleError(cliArgs);
+        }
+    }
+
+    [DoesNotReturn]
+    private static void HandleHelp(CliArgs cliArgs)
+    {
+        Console.WriteLine(cliArgs.HelpInfo.ToString());
+        Environment.Exit(0);
+    }
+
+    [DoesNotReturn]
+    private static void HandleError(CliArgs cliArgs)
+    {
+        Console.WriteLine(string.Join(Environment.NewLine, cliArgs.Errors));
+        Console.WriteLine(Environment.NewLine);
+        Console.WriteLine(cliArgs.HelpInfo.ToString());
+        Environment.Exit(1);
     }
 }
