@@ -8,15 +8,17 @@ public class FileLogger
     private string _fileName;
     private LogLevel[] _logLevels;
     private readonly LogLevel[] _allLogLevels = new[] { LogLevel.Debug, LogLevel.Info, LogLevel.Error };
+    private readonly bool _enabled;
 
-    public FileLogger(params LogLevel[] logLevels)
+    public FileLogger(bool enabled, params LogLevel[] logLevels)
     {
+        _enabled = enabled;
         Initialize(logLevels);
     }
 
     public void Log(LogLevel logLevel, string message, object[] parameters)
     {
-        if (!_logLevels.Contains(logLevel)) return;
+        if (!_enabled || !_logLevels.Contains(logLevel)) return;
         Directory.CreateDirectory(_path);
 
         var filePath = Path.Join(_path, _fileName);

@@ -34,6 +34,8 @@ public class Game
     public Game(GameSettings settings)
     {
         _settings = settings;
+
+        // TODO: Remove after fixing issue with expression in GameSettings.ToString()
         _settings.ToString();
 
         _logger = new FileLogger();
