@@ -1,4 +1,4 @@
-namespace Snek;
+namespace Snek.Entities;
 
 public class PlayerCell : Cell
 {
@@ -36,4 +36,7 @@ public class PlayerCell : Cell
     {
         Facing = facing;
     }
+
+    public override string ToString()
+        => $"{Position}:{Facing}";
 }

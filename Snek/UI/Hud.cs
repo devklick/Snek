@@ -1,6 +1,7 @@
 using Snek.Extensions;
 using Snek.Events;
 using Snek.Interfaces;
+using Snek.Input;
 
 namespace Snek.UI;
 

@@ -8,9 +8,10 @@ namespace Snek.Settings;
 public class CliArgs
 {
     public GameSettings GameSettings { get; } = GameSettings.Default;
-    public bool Help { get; private set; }
+    public bool RequiresHelp { get; private set; }
     public CliHelpInfo HelpInfo { get; private set; }
-    public bool Error { get; }
+    public List<string> Errors { get; } = new();
+    public bool HasError => Errors.Any();
     public CliArgs(string[] args)
     {
         var argProps = GetArgProps();
@@ -19,7 +20,7 @@ public class CliArgs
 
         if (args.Any(a => a == CliHelpInfo.FullName || a == CliHelpInfo.ShortName))
         {
-            Help = true;
+            RequiresHelp = true;
             return;
         }
 
@@ -32,7 +33,7 @@ public class CliArgs
 
             if (attr == null)
             {
-                Error = Help = true;
+                Errors.Add($"Unknown argument: {name}");
                 return;
             }
 
@@ -40,7 +41,7 @@ public class CliArgs
 
             if (!validation.Valid)
             {
-                Error = Help = true;
+                Errors.Add($"Invalid value for argument {name}: {value}");
                 return;
             }
 
@@ -73,6 +74,7 @@ public class CliArgs
             {
                 throw new NotImplementedException($"Unsupported type ${argProp.PropertyType} for CliArgAttribute");
             }
+
             var cliArg = new CliArgHelpInfo(attr.FullName, attr.ShortName, description)
             {
                 Default = GetDefault(argProp),
@@ -80,7 +82,6 @@ public class CliArgs
                 Validation = validation,
                 AllowedValues = allowedValues
             };
-
 
             helpInfo.Add(cliArg);
         }

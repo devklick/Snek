@@ -1,5 +1,6 @@
 using System.Reflection;
 using Snek.Attributes;
+using Snek.Input;
 
 namespace Snek.Extensions;
 
