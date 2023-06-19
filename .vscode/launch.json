@@ -5,11 +5,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET Core Launch (console)",
+      "name": "Launch Snek.Console",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/Snek/bin/Debug/net7.0/Snek.dll",
+      "program": "${workspaceFolder}/Snek.Console/bin/Debug/net7.0/Snek.dll",
       "args": [
         // "--help",
         "--width",
@@ -27,7 +27,7 @@
         "--debug",
         "true"
       ],
-      "cwd": "${workspaceFolder}/Snek/bin/Debug/net7.0/",
+      "cwd": "${workspaceFolder}/Snek.Console/bin/Debug/net7.0/",
       "console": "externalTerminal",
       "stopAtEntry": false
     },

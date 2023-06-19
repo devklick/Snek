@@ -29,10 +29,10 @@ jobs:
           dotnet-version: "7.0.x"
 
       - name: Install .Net dependencies
-        run: dotnet restore ./Snek
+        run: dotnet restore ./Snek.Console
 
       - name: Run build
-        run: dotnet build ./Snek
+        run: dotnet build ./Snek.Console
 
       - name: Fetch release version
         env:
@@ -40,19 +40,19 @@ jobs:
         run: npx semantic-release --branches "main" --dry-run
 
       - name: Run publish Windows
-        run: dotnet publish -c release -r win-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
+        run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
 
       - name: ZIP Windows output
         run: cd build/win-x64 && zip -r ../Snek_win-x64.zip * && cd ../..
 
       - name: Run publish Linux
-        run: dotnet publish -c release -r linux-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/linux-x64
+        run: dotnet publish -c release -r linux-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/linux-x64
 
       - name: ZIP Linux output
         run: cd build/linux-x64 && zip -r ../Snek_linux-x64.zip * && cd ../..
 
       - name: Run publish OSX
-        run: dotnet publish -c release -r osx-x64 ./Snek -p:Version=${{ env.RELEASE_VERSION }} -o build/osx-x64
+        run: dotnet publish -c release -r osx-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/osx-x64
 
       - name: ZIP OSX output
         run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
