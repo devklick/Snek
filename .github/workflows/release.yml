@@ -6,9 +6,8 @@ on:
       - main
 
 jobs:
-  release-snek:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -31,32 +30,67 @@ jobs:
       - name: Install .Net dependencies
         run: dotnet restore ./Snek.Console
 
-      - name: Run build
-        run: dotnet build ./Snek.Console
-
+  check-release-required:
+    runs-on: ubuntu-latest
+    outputs:
+      release-required: ${{ steps.fetch-release-version.outputs.RELEASE_REQUIRED }}
+    steps:
       - name: Fetch release version
+        id: fetch-release-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches "main" --dry-run
+        run: |
+          npx semantic-release --branches "main" --dry-run
 
+          if [[ $RELEASE_VERSION ]]; then echo "RELEASE_REQUIRED=true" >> "$GITHUB_OUTPUT";
+          else echo "Nothing to release"; 
+          fi;
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run build
+        run: dotnet build
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run build
+        run: dotnet test
+
+  publish:
+    needs: [build, test, check-release-required]
+    runs-on: ubuntu-latest
+    if: needs.check-release-required.outputs.release-required
+    steps:
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
-
-      - name: ZIP Windows output
-        run: cd build/win-x64 && zip -r ../Snek_win-x64.zip * && cd ../..
 
       - name: Run publish Linux
         run: dotnet publish -c release -r linux-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/linux-x64
 
-      - name: ZIP Linux output
-        run: cd build/linux-x64 && zip -r ../Snek_linux-x64.zip * && cd ../..
-
       - name: Run publish OSX
         run: dotnet publish -c release -r osx-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/osx-x64
+
+  package:
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZIP Windows output
+        run: cd build/win-x64 && zip -r ../Snek_win-x64.zip * && cd ../..
+
+      - name: ZIP Linux output
+        run: cd build/linux-x64 && zip -r ../Snek_linux-x64.zip * && cd ../..
 
       - name: ZIP OSX output
         run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
 
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
