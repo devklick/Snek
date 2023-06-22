@@ -6,8 +6,11 @@ on:
       - main
 
 jobs:
-  setup:
+  build-and-test:
     runs-on: ubuntu-latest
+    outputs:
+      release-version: ${{ steps.fetch-release-version.outputs.RELEASE_VERSION }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -30,72 +33,82 @@ jobs:
       - name: Install .Net dependencies
         run: dotnet restore
 
-  check-release-required:
-    runs-on: ubuntu-latest
-    needs: [setup]
-    outputs:
-      release-required: ${{ steps.fetch-release-version.outputs.RELEASE_REQUIRED }}
-    steps:
-      - name: Print working directory
-        run: pwd
-      - name: list contents
-        run: ls
-      - name: Fetch release version
-        id: fetch-release-version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx semantic-release --branches "main" --dry-run
-
-          if [[ $RELEASE_VERSION ]]; then echo "RELEASE_REQUIRED=true" >> "$GITHUB_OUTPUT";
-          else echo "Nothing to release"; 
-          fi;
-
-  build:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
       - name: Run build
         run: dotnet build
 
-  test:
-    needs: setup
+  publish-and-pack:
+    needs: build-and-test
     runs-on: ubuntu-latest
+    if: needs.build.outputs.release-version
     steps:
-      - name: Run build
-        run: dotnet test
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-  publish:
-    needs: [build, test, check-release-required]
-    runs-on: ubuntu-latest
-    if: needs.check-release-required.outputs.release-required
-    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "7.0.x"
+
+      - name: Install .Net dependencies
+        run: dotnet restore
+
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
+
+      - name: ZIP Windows output
+        run: cd build/win-x64 && zip -r ../Snek_win-x64.zip * && cd ../..
 
       - name: Run publish Linux
         run: dotnet publish -c release -r linux-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/linux-x64
 
-      - name: Run publish OSX
-        run: dotnet publish -c release -r osx-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/osx-x64
-
-  package:
-    needs: [publish]
-    runs-on: ubuntu-latest
-    steps:
-      - name: ZIP Windows output
-        run: cd build/win-x64 && zip -r ../Snek_win-x64.zip * && cd ../..
-
       - name: ZIP Linux output
         run: cd build/linux-x64 && zip -r ../Snek_linux-x64.zip * && cd ../..
+
+      - name: Run publish OSX
+        run: dotnet publish -c release -r osx-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/osx-x64
 
       - name: ZIP OSX output
         run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: build-output
+          path: ./build
+
   release:
-    needs: package
+    needs: publish-and-pack
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Download artifacts
+        uses: actions/download-artifact@master
+        with:
+          name: build-output
+          path: ./build
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
