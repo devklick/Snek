@@ -47,7 +47,7 @@ jobs:
   publish-and-pack:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: needs.build.outputs.release-version
+    if: needs.build-and-test.outputs.release-version
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
