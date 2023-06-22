@@ -6,10 +6,8 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  release-snek:
     runs-on: ubuntu-latest
-    outputs:
-      release-version: ${{ steps.fetch-release-version.outputs.RELEASE_VERSION }}
 
     steps:
       - name: Checkout repository
@@ -37,38 +35,9 @@ jobs:
         run: dotnet build
 
       - name: Fetch release version
-        id: fetch-release-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx semantic-release --branches "main" --dry-run
-          echo "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" >> $GITHUB_OUTPUT;
-
-  publish-and-pack:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: needs.build-and-test.outputs.release-version
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.x
-
-      - name: Install Node dependencies
-        run: npm install
-
-      - name: Setup .Net
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "7.0.x"
-
-      - name: Install .Net dependencies
-        run: dotnet restore
+        run: npx semantic-release --branches "main" --dry-run
 
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
@@ -87,35 +56,6 @@ jobs:
 
       - name: ZIP OSX output
         run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@master
-        with:
-          name: build-output
-          path: ./build
-
-  release:
-    needs: publish-and-pack
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.x
-
-      - name: Install Node dependencies
-        run: npm install
-
-      - name: Download artifacts
-        uses: actions/download-artifact@master
-        with:
-          name: build-output
-          path: ./build
 
       - name: Release
         env:
