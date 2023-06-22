@@ -42,7 +42,7 @@ Open a terminal, navigate to the folder you extracted the zip file to (e.g. `cd 
 
 # Audio
 
-The sound effects are annoying. Love 'em or hate 'em. Currently there's no way to disable them, but an option will be added in future.
+The sound effects are annoying. Love 'em or hate 'em. If they're too much for you, you can disable them. See the [Supported arguments](#supported-arguments) for more info on this.
 
 # Game options
 
@@ -85,7 +85,7 @@ There are a number of options that can can be configured when starting a game. T
   - GameOver: The game is over
   - Rebound: The players snake is reversed and continues traveling in the opposite direction
   - Portal: The player travels through walls. They will continue moving in the same direction but will emerge from the wall opposite the one they collided with
-- Default: Portal
+- Default: GameOver
 
 ### Audio Enabled
 - Arguments: `--audio`, `-a`
