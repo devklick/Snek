@@ -43,6 +43,7 @@ jobs:
         run: |
           npx semantic-release --branches "main" --dry-run
           echo ${{ env.RELEASE_VERSION }} >> "$GITHUB_OUTPUT";
+          echo ${{ env.RELEASE_VERSION }}
 
   publish-and-pack:
     needs: build-and-test
