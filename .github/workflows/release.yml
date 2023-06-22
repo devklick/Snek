@@ -36,15 +36,15 @@ jobs:
     outputs:
       release-required: ${{ steps.fetch-release-version.outputs.RELEASE_REQUIRED }}
     steps:
+      - name: Print working directory
+        run: pwd
+      - name: list contents
+        run: ls
       - name: Fetch release version
         id: fetch-release-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo Current directory
-          pwd
-          echo Contents
-          ls
           npx semantic-release --branches "main" --dry-run
 
           if [[ $RELEASE_VERSION ]]; then echo "RELEASE_REQUIRED=true" >> "$GITHUB_OUTPUT";
