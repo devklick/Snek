@@ -10,8 +10,7 @@ jobs:
   release-snek:
     runs-on: ubuntu-latest
     outputs:
-      next-release-version: ${{steps.output-next-version-to-github.outputs.NEXT_RELEASE_VERSION}}
-      hello-world: ${{steps.output-hello-world-to-github.outputs.HELLO_WORLD }}
+      next-release-version: ${{steps.fetch-next-version.outputs.NEXT_RELEASE_VERSION}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -41,21 +40,34 @@ jobs:
         id: fetch-next-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches "dev" --dry-run
+        # the RELEASE_VERSION var is set by sematic-release. See .releaserc.json
+        run: |
+          npx semantic-release --branches "dev" --dry-run
+          echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
 
-      - name: Log Next Version
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --branches dev
+
+  check-next-release:
+    needs: release-snek
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log next release version
+        env:
+          RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
         run: |
           echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{env.RELEASE_VERSION}}"
+          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
 
-      - name: Output hello world to Github
-        id: output-hello-world-to-github
-        run: echo "HELLO_WORLD=hello.world" >> "$GITHUB_OUTPUT"
-
-      - name: Output next version to Github
-        id: output-next-version-to-github
-        run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
-
+  only-on-next-release:
+    needs: release-snek
+    runs-on: ubuntu-latest
+    if: ${{needs.release-snek.outputs.next-release-version}} != ''
+    env:
+      RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
+    steps:
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
 
@@ -73,53 +85,3 @@ jobs:
 
       - name: ZIP OSX output
         run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
-
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches dev
-
-  check-next-release:
-    needs: release-snek
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log next release version
-        env:
-          RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
-        run: |
-          echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
-  check-hello-world:
-    needs: release-snek
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log Hello World
-        env:
-          HELLO_WORLD: ${{needs.release-snek.outputs.hello-world}}
-        run: |
-          echo "Says1: $HELLO_WORLD"
-          echo "Says2: ${{needs.release-snek.outputs.hello-world}}"
-
-  only-on-next-release:
-    needs: release-snek
-    runs-on: ubuntu-latest
-    if: ${{needs.release-snek.outputs.next-release-version}} != ''
-    steps:
-      - name: Log next release version if present
-        env:
-          RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
-        run: |
-          echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
-
-  only-on-hello-world:
-    needs: release-snek
-    runs-on: ubuntu-latest
-    if: ${{needs.release-snek.outputs.hello-world}} != ''
-    steps:
-      - name: Log next release version if present
-        env:
-          HELLO_WORLD: ${{needs.release-snek.outputs.hello-world}}
-        run: |
-          echo "Says1: $HELLO_WORLD"
-          echo "Says2: ${{needs.release-snek.outputs.hello-world}}"
