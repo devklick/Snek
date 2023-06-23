@@ -10,7 +10,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     outputs:
-      next-release-version: ${{steps.output-next-version-to-github.outputs.NEXT_RELEASE_VERSION}}
+      # RELEASE_VERSION set in .releaserc.json
+      next-release-version: ${{steps.fetch-next-version.outputs.RELEASE_VERSION}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -45,14 +46,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --branches "dev" --dry-run
 
-      - name: Log Next Version
-        run: |
-          echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{env.RELEASE_VERSION}}"
+      # - name: Log Next Version
+      #   run: |
+      #     echo "release version1: $RELEASE_VERSION"
+      #     echo "release version2: ${{env.RELEASE_VERSION}}"
 
-      - name: Output next version to Github
-        id: output-next-version-to-github
-        run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
+      # - name: Output next version to Github
+      #   id: output-next-version-to-github
+      #   run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
 
   publish-and-release:
     needs: build-and-test
