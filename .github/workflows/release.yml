@@ -40,7 +40,7 @@ jobs:
         id: fetch-next-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches "main" --dry-run
+        run: npx semantic-release --branches "dev" --dry-run
 
       - name: Log Next Version
         run: |
