@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
-  release-snek:
+  build-and-test:
     runs-on: ubuntu-latest
-
+    outputs:
+      next-release-version: ${{steps.capture-next-version.outputs.NEXT_RELEASE_VERSION}}
+      branch-name: ${{ github.head_ref || github.ref_name }}
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -29,18 +34,54 @@ jobs:
           dotnet-version: "7.0.x"
 
       - name: Install .Net dependencies
-        run: dotnet restore ./Snek
+        run: dotnet restore
 
-      - name: Run build
-        run: dotnet build ./Snek
+      - name: Build
+        run: dotnet build
 
-      - name: Fetch release version
+      - name: Test
+        run: dotnet test
+
+      - name: Fetch next version
+        id: fetch-next-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches "main" --dry-run
+        run: |
+          npx semantic-release --branches ${{env.BRANCH_NAME}} --dry-run
+
+      - name: Capture next version
+        id: capture-next-version
+        # RELEASE_VERSION by semantic-release in previous step, see .releaserc.json
+        run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> $GITHUB_OUTPUT
+
+  publish-and-release:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: ${{needs.build-and-test.outputs.next-release-version &&
+      needs.build-and-test.outputs.branch-name == 'main'}}
+    env:
+      RELEASE_VERSION: ${{needs.build-and-test.outputs.next-release-version}}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "7.0.x"
 
       - name: Run publish Windows
-        run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
+        run: dotnet publish -c release -r win-x64 ./Snek.Console "-p:Version=${{ env.RELEASE_VERSION }}" -o build/win-x64
 
       - name: ZIP Windows output
         run: cd build/win-x64 && zip -r ../Snek_win-x64.zip * && cd ../..
