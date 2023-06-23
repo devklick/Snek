@@ -1,4 +1,4 @@
-name: Release Snek
+name: Build, Test, Publish, Release
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
 
 jobs:
   build-and-test:
+    # Builds and tests the solution
+    # Identifies the next release version number, if there is one
     runs-on: ubuntu-latest
     outputs:
       next-release-version: ${{steps.capture-next-version.outputs.NEXT_RELEASE_VERSION}}
@@ -55,6 +57,9 @@ jobs:
         run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> $GITHUB_OUTPUT
 
   publish-and-release:
+    # Publishes, packages and releases the next version,
+    # only if one has been defined in the previous job.
+    # This job will only run on the main branch
     needs: build-and-test
     runs-on: ubuntu-latest
     if: ${{needs.build-and-test.outputs.next-release-version &&
