@@ -73,10 +73,11 @@ jobs:
         run: |
           echo "release version1: $RELEASE_VERSION"
           echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
-          - name: Checkout repository
-          uses: actions/checkout@v2
-          with:
-            fetch-depth: 0
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v2
