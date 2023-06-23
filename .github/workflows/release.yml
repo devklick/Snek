@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       next-release-version: ${{steps.fetch-next-version.outputs.RELEASE_VERSION}}
+      hello-world: ${{steps.fetch-next-version.outputs.HELLO_WORLD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -47,6 +48,12 @@ jobs:
           echo "release version1: $RELEASE_VERSION"
           echo "release version2: ${{env.RELEASE_VERSION}}"
 
+      - name: Output hello world to Github
+        run: echo "HELLO_WORLD=hello.world" >> "$GITHUB_OUTPUT"
+
+      - name: Output next version to Github
+        run: echo "RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
+
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
 
@@ -75,16 +82,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Log next release version
+        env:
+          RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
         run: |
           echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{env.RELEASE_VERSION}}"
+          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
+  check-hello-world:
+    needs: release-snek
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log Hello World
+        env:
+          HELLO_WORLD: ${{needs.release-snek.outputs.hello-world}}
+        run: |
+          echo "Says1: $HELLO_WORLD"
+          echo "Says2: ${{needs.release-snek.outputs.hello-world}}"
 
   only-on-next-release:
     needs: release-snek
     runs-on: ubuntu-latest
-    if: needs.release-snek.outputs.next-release-version != ''
+    if: ${{needs.release-snek.outputs.next-release-version}} != ''
     steps:
       - name: Log next release version if present
+        env:
+          RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
         run: |
           echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{env.RELEASE_VERSION}}"
+          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
+
+  only-on-hello-world:
+    needs: release-snek
+    runs-on: ubuntu-latest
+    if: ${{needs.release-snek.outputs.hello-world}} != ''
+    steps:
+      - name: Log next release version if present
+        env:
+          HELLO_WORLD: ${{needs.release-snek.outputs.hello-world}}
+        run: |
+          echo "Says1: $HELLO_WORLD"
+          echo "Says2: ${{needs.release-snek.outputs.hello-world}}"
