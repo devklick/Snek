@@ -43,7 +43,7 @@ jobs:
         # the RELEASE_VERSION var is set by sematic-release. See .releaserc.json
         run: |
           npx semantic-release --branches "dev" --dry-run
-          echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
+          echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> $GITHUB_OUTPUT
 
   check-next-release:
     needs: release-snek
