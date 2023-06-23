@@ -43,10 +43,9 @@ jobs:
         id: fetch-next-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # RELEASE_VERSION set in .releaserc.json
         run: |
           npx semantic-release --branches "dev" --dry-run
-          echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
+          echo "NEXT_RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
 
       # - name: Log Next Version
       #   run: |
