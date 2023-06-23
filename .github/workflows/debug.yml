@@ -3,7 +3,7 @@ name: Debug actions
 on:
   push:
     branches:
-      - deb
+      - dev
 
 jobs:
   job1:
