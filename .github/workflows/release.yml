@@ -7,7 +7,7 @@ on:
       - dev
 
 jobs:
-  release-snek:
+  build-and-test:
     runs-on: ubuntu-latest
     outputs:
       next-release-version: ${{steps.output-next-version-to-github.outputs.NEXT_RELEASE_VERSION}}
@@ -33,8 +33,11 @@ jobs:
       - name: Install .Net dependencies
         run: dotnet restore
 
-      - name: Run build
+      - name: Build
         run: dotnet build
+
+      - name: Test
+        run: dotnet test
 
       - name: Fetch release version
         id: fetch-next-version
@@ -51,29 +54,13 @@ jobs:
         id: output-next-version-to-github
         run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
 
-  check-next-release:
-    needs: release-snek
+  publish-and-release:
+    needs: build-and-test
     runs-on: ubuntu-latest
-    steps:
-      - name: Log next release version
-        env:
-          RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
-        run: |
-          echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
-
-  only-on-next-release:
-    needs: release-snek
-    runs-on: ubuntu-latest
-    if: ${{needs.release-snek.outputs.next-release-version}} != ''
+    if: ${{needs.build-and-test.outputs.next-release-version}} != ''
     env:
-      RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
+      RELEASE_VERSION: ${{needs.build-and-test.outputs.next-release-version}}
     steps:
-      - name: Log next release version if present
-        run: |
-          echo "release version1: $RELEASE_VERSION"
-          echo "release version2: ${{needs.release-snek.outputs.next-release-version}}"
-
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
