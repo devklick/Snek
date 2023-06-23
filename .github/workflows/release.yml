@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       next-release-version: ${{steps.capture-next-version.outputs.NEXT_RELEASE_VERSION}}
+      branch-name: ${{ github.head_ref || github.ref_name }}
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -44,16 +47,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx semantic-release --branches "dev" --dry-run
+          npx semantic-release --branches ${{env.BRANCH_NAME}} --dry-run
 
       - name: Capture next version
         id: capture-next-version
+        # RELEASE_VERSION by semantic-release in previous step, see .releaserc.json
         run: echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> $GITHUB_OUTPUT
 
   publish-and-release:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: ${{needs.build-and-test.outputs.next-release-version}} != ''
+    if: ${{needs.build-and-test.outputs.next-release-version &&
+      needs.build-and-test.outputs.branch-name == 'main'}}
     env:
       RELEASE_VERSION: ${{needs.build-and-test.outputs.next-release-version}}
     steps:
@@ -96,4 +101,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches dev
+        run: npx semantic-release --branches main
