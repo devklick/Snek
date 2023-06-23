@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   release-snek:
     runs-on: ubuntu-latest
-
+    outputs:
+      next-release-version: ${{steps.fetch-next-version.outputs.RELEASE_VERSION}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -29,15 +31,21 @@ jobs:
           dotnet-version: "7.0.x"
 
       - name: Install .Net dependencies
-        run: dotnet restore ./Snek
+        run: dotnet restore
 
       - name: Run build
-        run: dotnet build ./Snek
+        run: dotnet build
 
       - name: Fetch release version
+        id: fetch-next-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --branches "main" --dry-run
+
+      - name: Log Next Version
+        run: |
+          echo "release version1: $RELEASE_VERSION"
+          echo "release version2: ${{env.RELEASE_VERSION}}"
 
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
@@ -60,4 +68,23 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches main
+        run: npx semantic-release --branches dev
+
+  check-next-release:
+    needs: release-snek
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log next release version
+        run: |
+          echo "release version1: $RELEASE_VERSION"
+          echo "release version2: ${{env.RELEASE_VERSION}}"
+
+  only-on-next-release:
+    needs: release-snek
+    runs-on: ubuntu-latest
+    if: needs.release-snek.outputs.next-release-version != ''
+    steps:
+      - name: Log next release version if present
+        run: |
+          echo "release version1: $RELEASE_VERSION"
+          echo "release version2: ${{env.RELEASE_VERSION}}"
