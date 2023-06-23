@@ -45,11 +45,6 @@ jobs:
           npx semantic-release --branches "dev" --dry-run
           echo "NEXT_RELEASE_VERSION=${{env.RELEASE_VERSION}}" >> "$GITHUB_OUTPUT"
 
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches dev
-
   check-next-release:
     needs: release-snek
     runs-on: ubuntu-latest
@@ -68,6 +63,23 @@ jobs:
     env:
       RELEASE_VERSION: ${{needs.release-snek.outputs.next-release-version}}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "7.0.x"
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console -p:Version=${{ env.RELEASE_VERSION }} -o build/win-x64
 
@@ -85,3 +97,8 @@ jobs:
 
       - name: ZIP OSX output
         run: cd build/osx-x64 && zip -r ../Snek_osx-x64.zip * && cd ../..
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --branches dev
