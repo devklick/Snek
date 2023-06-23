@@ -32,6 +32,7 @@ jobs:
     if: needs.job1.outputs.output1 != ''
     steps:
       - run: echo "output1 has a value, ${{needs.job1.outputs.output1}}"
+
   # Only log if output1 from job1 does NOT have a value
   job4:
     runs-on: ubuntu-latest
@@ -39,6 +40,7 @@ jobs:
     if: needs.job1.outputs.output1 == ''
     steps:
       - run: echo "output1 has no value"
+
   # Only log the output1 from job1 if it has a value
   job5:
     runs-on: ubuntu-latest
@@ -46,6 +48,7 @@ jobs:
     if: needs.job1.outputs.output2 != ''
     steps:
       - run: echo "output2 has a value, ${{needs.job1.outputs.output2}}"
+
   # Only log if output1 from job1 does NOT have a value
   job6:
     runs-on: ubuntu-latest
