@@ -7,7 +7,7 @@
     [
       "@semantic-release/exec",
       {
-        "verifyReleaseCmd": "echo RELEASE_VERSION=${nextRelease.version}"
+        "verifyReleaseCmd": "echo RELEASE_VERSION=${nextRelease.version} >> $GITHUB_ENV"
       }
     ],
     [
