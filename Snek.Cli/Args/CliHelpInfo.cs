@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Snek.Core.Cli;
+namespace Snek.Cli.Args;
 
 public class CliHelpInfo
 {

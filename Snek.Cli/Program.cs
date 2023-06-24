@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Snek.Core.Cli;
+using Snek.Cli.Args;
 using Snek.Core;
 
-namespace Snek.Console;
-using Console = System.Console;
+namespace Snek.Cli;
 
 class Program
 {

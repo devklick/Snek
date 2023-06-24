@@ -1,6 +1,7 @@
 using System.Runtime.Versioning;
+using Snek.Core;
 
-namespace Snek.Core;
+namespace Snek.Cli;
 
 public class CliConsole : IConsole
 {

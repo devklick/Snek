@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.ComponentModel.DataAnnotations;
 
-namespace Snek.Core.Cli;
+namespace Snek.Cli.Args;
 
 /// <summary>
 /// Defines an argument accepted by a command line interface application.

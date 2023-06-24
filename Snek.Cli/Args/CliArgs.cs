@@ -5,11 +5,11 @@ using System.Reflection;
 using Snek.Core;
 using Snek.Core.Settings;
 
-namespace Snek.Core.Cli;
+namespace Snek.Cli.Args;
 
 public class CliArgs
 {
-    public GameSettings GameSettings { get; } = GameSettings.Default;
+    public CliGameSettings GameSettings { get; } = CliGameSettings.Default;
     public bool RequiresHelp { get; private set; }
     public CliHelpInfo HelpInfo { get; private set; }
     public List<string> Errors { get; } = new();
@@ -132,11 +132,11 @@ public class CliArgs
         return new("Enum", $"{string.Join(", ", names)}", allowedValues);
     }
 
-    private static IEnumerable<(PropertyInfo argProp, CliArgAttribute attr)> GetArgProps()
+    private IEnumerable<(PropertyInfo argProp, CliArgAttribute attr)> GetArgProps()
     {
         var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.SetProperty;
 
-        return typeof(GameSettings).GetProperties(flags)
+        return GameSettings.GetType().GetProperties(flags)
             .Select(argProp => (argProp, attr: argProp.GetCustomAttribute<CliArgAttribute>()))
             .Where(value => value.attr != null)!;
     }
