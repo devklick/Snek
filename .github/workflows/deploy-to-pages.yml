@@ -22,12 +22,13 @@ jobs:
       - name: Publish .Net
         run: dotnet publish ./Snek.Web -c release -o build --nologo
 
+      # changes the base-tag in index.html from '/' to 'Snek.Web' to match GitHub Pages repository subdirectory
+      - name: Change base-tag in index.html from / to Snek.Web
+        run: sed -i 's/<base href="\/" \/>/<base href="\/Snek.Web\/" \/>/g' build/wwwroot/index.html
+
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
           FOLDER: build/wwwroot
-      # changes the base-tag in index.html from '/' to 'Snek.Web' to match GitHub Pages repository subdirectory
-      - name: Change base-tag in index.html from / to Snek.Web
-        run: sed -i 's/<base href="\/" \/>/<base href="\/Snek.Web\/" \/>/g' build/wwwroot/index.html
