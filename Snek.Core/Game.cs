@@ -161,6 +161,7 @@ public class Game
             {
                 _state = GameState.Exiting;
             }
+            await Task.Delay(1);
         }
     }
 

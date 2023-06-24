@@ -11,8 +11,8 @@ public class CliGameSettings
     {
         Width = 15,
         Height = 15,
-        InitialTicksPerSecond = 15,
-        IncreaseSpeedOnEnemyDestroyed = true,
+        InitialTicksPerSecond = 8,
+        IncreaseSpeedOnEnemyDestroyed = false,
         WallCollisionBehavior = WallCollisionBehavior.Portal,
         AudioEnabled = true,
         DebugLogging = false,
@@ -55,7 +55,8 @@ public class CliGameSettings
             Height = cliGameSettings.Height,
             IncreaseSpeedOnEnemyDestroyed = cliGameSettings.IncreaseSpeedOnEnemyDestroyed,
             InitialTicksPerSecond = cliGameSettings.InitialTicksPerSecond,
-            Width = cliGameSettings.Width
+            Width = cliGameSettings.Width,
+            WallCollisionBehavior = cliGameSettings.WallCollisionBehavior
         };
     }
 }

@@ -12,29 +12,24 @@
       "program": "${workspaceFolder}/Snek.Cli/bin/Debug/net7.0/Snek.dll",
       "args": [
         // "--help",
-        "--width",
-        "15",
-        "--height",
-        "15",
-        "--speed",
-        "6",
-        "--increase-speed",
-        "true",
-        "--collision",
-        "Rebound",
-        "--audio",
-        "false",
-        "--debug",
-        "true"
+        // "--width",
+        // "15",
+        // "--height",
+        // "15",
+        // "--speed",
+        // "6",
+        // "--increase-speed",
+        // "true",
+        // "--collision",
+        // "Rebound",
+        // "--audio",
+        // "false",
+        // "--debug",
+        // "true"
       ],
       "cwd": "${workspaceFolder}/Snek.Cli/bin/Debug/net7.0/",
       "console": "externalTerminal",
       "stopAtEntry": false
-    },
-    {
-      "name": ".NET Core Attach",
-      "type": "coreclr",
-      "request": "attach"
     },
     {
       "name": "Launch Snek.Web",

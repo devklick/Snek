@@ -10,9 +10,9 @@ public class GameSettings
     {
         Width = 15,
         Height = 15,
-        InitialTicksPerSecond = 15,
-        IncreaseSpeedOnEnemyDestroyed = true,
-        WallCollisionBehavior = WallCollisionBehavior.Portal,
+        InitialTicksPerSecond = 8,
+        IncreaseSpeedOnEnemyDestroyed = false,
+        WallCollisionBehavior = WallCollisionBehavior.GameOver,
         AudioEnabled = true,
         DebugLogging = false,
     };
