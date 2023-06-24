@@ -9,6 +9,8 @@
         "verifyReleaseCmd": "echo RELEASE_VERSION=${nextRelease.version} >> $GITHUB_ENV"
       }
     ],
+    "@semantic-release/npm",
+    "@semantic-release/git",
     [
       "@semantic-release/github",
       {
