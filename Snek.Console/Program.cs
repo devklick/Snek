@@ -7,13 +7,14 @@ using Console = System.Console;
 
 class Program
 {
-    static void Main(string[] args)
+    async static Task Main(string[] args)
     {
         var cliArgs = new CliArgs(args);
 
         HandleArgs(cliArgs);
 
-        new Game(cliArgs.GameSettings).Play();
+        var console = new CliConsole();
+        await new Game(cliArgs.GameSettings, console).Play();
     }
 
     private static void HandleArgs(CliArgs cliArgs)

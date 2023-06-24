@@ -16,6 +16,6 @@ public abstract class AudioPlayer
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             return new OsxAudioPlayer();
         else
-            throw new Exception("No implementation exist for the current OS");
+            return new NullAudioPlayer();
     }
 }

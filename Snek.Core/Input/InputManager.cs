@@ -8,8 +8,11 @@ public class InputManager
     private readonly Dictionary<(GameState GameState, ConsoleKey Key), PlayerInput> _KapToActionMap;
     private readonly Dictionary<PlayerInput, IEnumerable<(GameState GameState, ConsoleKey Key)>> _actionToKeyMap;
 
-    public InputManager()
+    private readonly IConsole _console;
+
+    public InputManager(IConsole console)
     {
+        _console = console;
         _KapToActionMap = new()
         {
             { (GameState.Playing, ConsoleKey.UpArrow), PlayerInput.FaceNorth },
@@ -52,11 +55,11 @@ public class InputManager
     /// Checks if the player has pressed any known key and returns the <see cref="PlayerInput"/> associated with the known key.
     /// If no key was pressed, or an unknown key was pressed, `null` is returned.
     /// </summary>
-    public PlayerInput? GetInput(GameState currentGameState)
+    public async Task<PlayerInput?> GetInput(GameState currentGameState)
     {
-        if (Console.KeyAvailable)
+        if (_console.KeyAvailable)
         {
-            var keyInfo = Console.ReadKey(true);
+            var keyInfo = await _console.ReadKey(true);
 
             if (_KapToActionMap.TryGetValue((currentGameState, keyInfo.Key), out var input))
             {

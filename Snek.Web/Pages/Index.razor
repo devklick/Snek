@@ -1,0 +1,42 @@
+﻿@page "/"
+
+<PageTitle>Snek</PageTitle>
+
+<h1>Snek</h1>
+
+<a href="https://github.com/devklick/Snek/blob/main/README.md" alt="Go To Readme">
+	<img title="Go To Readme" alt="Go To Readme" src="https://raw.githubusercontent.com/dotnet/dotnet-console-games/main/.github/resources/readme-black.svg">
+</a>
+
+<div class="console-window text-center my-3" @onkeydown="@Console.OnKeyDown" tabindex="0">
+	<div class="d-inline-block bg-dark text-light border p-2 text-start shadow padding-0">
+		<pre class="console">
+			<code>@Console.State</code>
+            <style>
+                code {
+                    display: grid;
+                    @* dunno why we need to +1 here *@
+                    grid-template-columns: repeat(@GridColumns, 1fr);
+                    grid-template-rows: repeat(@GridRows, 1fr);
+                }
+            </style>
+		</pre>
+	</div>
+</div>
+
+@code 
+{
+    int GridRows => Console.WindowHeight + 1;
+    int GridColumns => Console.WindowWidth + 1;
+
+    Snek.Core.Settings.GameSettings Settings = Core.Settings.GameSettings.Default;
+    Snek.Web.WebConsole Console;
+    Snek.Core.Game Game;
+    public Index()
+    {
+        Console = new WebConsole();
+        Console.TriggerRefresh = StateHasChanged;
+        Game = new(Core.Settings.GameSettings.Default, Console);
+    }
+    protected override void OnInitialized() => InvokeAsync(Game.Play);
+}

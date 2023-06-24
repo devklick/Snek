@@ -12,9 +12,9 @@ public class GameSettings
     {
         Width = 15,
         Height = 15,
-        InitialTicksPerSecond = 8,
-        IncreaseSpeedOnEnemyDestroyed = false,
-        WallCollisionBehavior = WallCollisionBehavior.GameOver,
+        InitialTicksPerSecond = 15,
+        IncreaseSpeedOnEnemyDestroyed = true,
+        WallCollisionBehavior = WallCollisionBehavior.Portal,
         AudioEnabled = true,
         DebugLogging = false,
     };
@@ -46,8 +46,8 @@ public class GameSettings
     [CliArg("audio", "a")]
     [Description("Whether or not sound effects should play")]
     public bool AudioEnabled { get; set; }
-    public int DisplayWidthMultiplier => 2;
-    public int DisplayHeightMultiplier => 1;
+    public int DisplayWidthMultiplier { get; set; } = 2;
+    public int DisplayHeightMultiplier { get; set; } = 1;
     public int DisplayWidth => DisplayWidthMultiplier * Width;
     public int DisplayHeight => (DisplayHeightMultiplier * Height) + HudHeight;
     public int HudWidth => DisplayWidth;

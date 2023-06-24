@@ -41,14 +41,17 @@ public class Display
     /// </summary>
     private readonly object drawLock = new();
 
+    private readonly IConsole _console;
+
     /// <summary>
     /// Constructs the display and initializes the console by drawing the grid.
     /// </summary>
     /// <param name="gameGrid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
     /// <param name="widthMultiplier">The number of times to repeat a cell along the `X` axis when drawing it to the display.</param>
     /// <param name="heightMultiplier">The number of times to repeat a cell along the `Y` axis when drawing it to the display.</param>
-    public Display(int width, int height, int widthMultiplier, int heightMultiplier, GameGrid gameGrid, Hud? hud = null)
+    public Display(IConsole console, int width, int height, int widthMultiplier, int heightMultiplier, GameGrid gameGrid, Hud? hud = null)
     {
+        _console = console;
         _width = width;
         _height = height;
         _widthMultiplier = widthMultiplier;
@@ -78,11 +81,11 @@ public class Display
         lock (drawLock)
         {
             offset ??= Position.Default;
-            var _bgCopy = Console.BackgroundColor;
-            var _fgCopy = Console.ForegroundColor;
+            var _bgCopy = _console.BackgroundColor;
+            var _fgCopy = _console.ForegroundColor;
 
-            Console.BackgroundColor = cell.BackgroundColor;
-            Console.ForegroundColor = cell.SpriteColor;
+            _console.BackgroundColor = cell.BackgroundColor;
+            _console.ForegroundColor = cell.SpriteColor;
 
             var heightMultiplier = disableMultipliers ? 1 : _heightMultiplier;
             var widthMultiplier = disableMultipliers ? 1 : _widthMultiplier;
@@ -94,13 +97,13 @@ public class Display
                 {
                     var x = (cell.Position.X * widthMultiplier) + c + offset.Value.X;
                     var y = (cell.Position.Y * heightMultiplier) + r + offset.Value.Y;
-                    Console.SetCursorPosition(x, y);
-                    Console.Write(cell.Sprite);
+                    _console.SetCursorPosition(x, y);
+                    _console.Write(cell.Sprite);
                 }
             }
 
-            Console.BackgroundColor = _bgCopy;
-            Console.ForegroundColor = _fgCopy;
+            _console.BackgroundColor = _bgCopy;
+            _console.ForegroundColor = _fgCopy;
         }
     }
 
@@ -122,7 +125,7 @@ public class Display
     /// </summary>
     private void InitializeConsole()
     {
-        Console.Clear();
+        _console.Clear();
 
         if (OperatingSystem.IsWindows())
         {
@@ -132,7 +135,7 @@ public class Display
         {
             InitializeNonWindowsConsole();
         }
-        Console.CursorVisible = false;
+        _console.CursorVisible = false;
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -142,16 +145,16 @@ public class Display
         // so lets set the dimensions based on the size of the game.
 
         // We add 1 to the buffer and window height to accommodate for overflow.
-        Console.SetWindowSize(_width, _height + 1);
-        Console.SetBufferSize(_width, _height + 1);
+        _console.SetWindowSize(_width, _height + 1);
+        _console.SetBufferSize(_width, _height + 1);
     }
 
     private void InitializeNonWindowsConsole()
     {
         // In non-windows OS, we cant control the console size.
         // Instead, verify that its size will support the game dimensions and throw an error if not.
-        var badWidth = Console.WindowWidth < _width;
-        var badHeight = Console.WindowHeight < _height;
+        var badWidth = _console.WindowWidth < _width;
+        var badHeight = _console.WindowHeight < _height;
 
         if (badWidth || badHeight)
         {

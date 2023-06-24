@@ -34,7 +34,7 @@ public class Game
     private readonly AudioManager _audio;
     private readonly FileLogger _logger;
 
-    public Game(GameSettings settings)
+    public Game(GameSettings settings, IConsole console)
     {
         _settings = settings;
         _logger = new FileLogger(_settings.DebugLogging);
@@ -46,7 +46,7 @@ public class Game
         // Set up the game timer to tick every 1 second
         _timer = new GamePlayTimer(1000);
 
-        _input = new();
+        _input = new(console);
 
         // The order of operations is important here.
         // Grid has to be created first, obviously
@@ -58,7 +58,7 @@ public class Game
         _hud = new Hud(settings.HudWidth, settings.HudHeight, new Position(0, _grid.Height), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
         // Next, the display needs to be created, so it knows about and draws the grid
-        _display = new(settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);
+        _display = new(console, settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);
 
         // Finally, we initialize the various game components that get re-initialized on replay.
         Initialize();
@@ -68,10 +68,10 @@ public class Game
     /// Starts game play and carries out the game logic. 
     /// This method will not return until the gameplay is complete.
     /// </summary>
-    public void Play()
+    public async Task Play()
     {
-        GameLoop();
-        ReplayLoop();
+        await GameLoop();
+        await ReplayLoop();
     }
 
     [MemberNotNull(nameof(_player)), MemberNotNull(nameof(_enemy))]
@@ -106,17 +106,17 @@ public class Game
         _grid.Add(_player);
     }
 
-    private void GameLoop()
+    private async Task GameLoop()
     {
         SetGameState(GameState.Playing);
 
         while (!_state.IsGameplayOver())
         {
             _logger.LogInfo(GetLogEventType(), "Begin wait", Delay);
-            Thread.Sleep(Delay);
+            await Task.Delay(Delay);
             _logger.LogInfo(GetLogEventType(), "End wait");
 
-            var input = _input.GetInput(_state);
+            var input = await _input.GetInput(_state);
 
             if (input != null)
             {
@@ -135,15 +135,15 @@ public class Game
                 HandleChangeDirection(direction!.Value);
             }
 
-            Tick();
+            await Tick();
         }
     }
 
-    private void ReplayLoop()
+    private async Task ReplayLoop()
     {
         while (_state.IsGameplayOver())
         {
-            var input = _input.GetInput(_state);
+            var input = await _input.GetInput(_state);
 
             if (input != null)
             {
@@ -155,7 +155,7 @@ public class Game
                 _logger.LogInfo(GetLogEventType(), "Initializing replay");
                 SetGameState(GameState.Initializing);
                 Initialize(true);
-                Play();
+                await Play();
             }
             else if (input == PlayerInput.Quit)
             {
@@ -212,7 +212,7 @@ public class Game
     ///     <item>Player destroyed enemy</item>
     /// </list>
     /// </summary>
-    private void Tick()
+    private async Task Tick()
     {
         var nextHeadPosition = _player.NextHeadPosition();
         _logger.LogInfo(GetLogEventType(), "Next head position determined", nextHeadPosition);
@@ -239,6 +239,8 @@ public class Game
             _logger.LogInfo(GetLogEventType(), "Enemy destroyed");
             HandleEnemyDestroyed(oldTailPosition);
         }
+
+        await Task.CompletedTask;
     }
 
     private void HandleWallCollision(Position nextHeadPosition)
