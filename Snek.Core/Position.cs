@@ -87,4 +87,13 @@ public readonly struct Position
         Direction.West => new Position(X - 1, Y),
         _ => throw new NotImplementedException($"Direction {direction} not supported"),
     };
+
+    public static Direction GetDirectionOfTravel(Position from, Position to)
+    {
+        if (from.X > to.X) return Direction.West;
+        if (from.X < to.X) return Direction.East;
+        if (from.Y > to.Y) return Direction.North;
+        if (from.Y < to.Y) return Direction.South;
+        throw new NotImplementedException("No implementation for cells that are on the position");
+    }
 }

@@ -97,7 +97,8 @@ public class GameGrid : IStyled<Cell>, IGrid
     public void ExtendPlayerTail(Position position)
     {
         ArgumentNullException.ThrowIfNull(_player);
-        var cell = _player.CreateCell(position);
+        var direction = Position.GetDirectionOfTravel(position, _player.Tail.Position);
+        var cell = _player.CreateCell(position, false, direction);
         _player.Cells.Add(cell);
         OnCellUpdated(cell);
     }

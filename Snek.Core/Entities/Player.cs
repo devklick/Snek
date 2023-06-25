@@ -137,7 +137,7 @@ public class Player : IStyled<PlayerCell>
 
         if (secondLast.Position == neighbor)
         {
-            var directionOfTravel = GetDirectionOfTravel(Tail.Position, secondLast.Position);
+            var directionOfTravel = Position.GetDirectionOfTravel(Tail.Position, secondLast.Position);
             nextHeadFacing = directionOfTravel.GetOpposite();
             var message = $"Player would instantly collide with self if facing it's natural opposite direction, {Facing.GetOpposite()}. ";
             message += $"instead face the opposite direction that the tail is currently traveling in, {nextHeadFacing}";
@@ -152,15 +152,6 @@ public class Player : IStyled<PlayerCell>
     }
     private void LogSelf()
         => _logger.LogInfo(GetLogEventType(), ToString());
-
-    private static Direction GetDirectionOfTravel(Position first, Position second)
-    {
-        if (first.X > second.X) return Direction.West;
-        if (first.X < second.X) return Direction.East;
-        if (first.Y > second.Y) return Direction.North;
-        if (first.Y < second.Y) return Direction.South;
-        throw new NotImplementedException("No implementation for cells that are on the position");
-    }
 
     private string GetLogEventType([CallerMemberName] string memberName = "")
         => $"{nameof(Player)}.{memberName}";
