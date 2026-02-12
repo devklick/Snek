@@ -1,26 +1,20 @@
 namespace Snek.Core;
 
-public readonly struct Position
+public readonly struct Position(int x, int y)
 {
     /// <summary>
     /// The position along the X (horizontal) axis.
     /// </summary>
-    public int X { get; }
+    public int X { get; } = x;
     /// <summary>
     /// The position along the y (vertical) axis.
     /// </summary>
-    public int Y { get; }
+    public int Y { get; } = y;
 
     /// <summary>
     /// Default value to be used for the Position class.
     /// </summary>
     public static readonly Position Default = new(0, 0);
-
-    public Position(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
 
     /// <summary>
     /// Gives the ability to perform a comparison between the current instance of the Position class with another.

@@ -1,11 +1,6 @@
 namespace Snek.Core.Events;
 
-public class ScoreUpdatedEventArgs
+public class ScoreUpdatedEventArgs(int score)
 {
-    public int Score { get; }
-
-    public ScoreUpdatedEventArgs(int score)
-    {
-        Score = score;
-    }
+    public int Score { get; } = score;
 }

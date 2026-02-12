@@ -2,9 +2,9 @@ namespace Snek.Core.Events;
 
 public class GameStateUpdatedEventArgs
 {
-    public GameState State { get; }
+    public GameState GameState { get; }
     public GameStateUpdatedEventArgs(GameState state)
     {
-        State = state;
+        GameState = state;
     }
 }

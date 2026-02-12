@@ -4,8 +4,7 @@ public class PlayerCell : Cell
 {
     public Direction Facing { get; set; }
     public PlayerCell(Position position) : base(position)
-    {
-    }
+    { }
 
     public PlayerCell(int x, int y)
         : base(x, y)

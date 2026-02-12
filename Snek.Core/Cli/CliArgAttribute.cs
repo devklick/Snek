@@ -31,7 +31,7 @@ public class CliArgAttribute : Attribute
         ShortName = shortName;
 
         if (!FullName.StartsWith("--")) FullName = $"--{FullName}";
-        if (!ShortName.StartsWith("-")) ShortName = $"-{ShortName}";
+        if (!ShortName.StartsWith('-')) ShortName = $"-{ShortName}";
     }
 
     /// <summary>

@@ -1,20 +1,15 @@
 using System.Diagnostics;
 
-using Snek.Core.Audio;
+
+namespace Snek.Core.Audio;
 
 public abstract class UnixAudioPlayer : AudioPlayer
 {
-    public class CommandInfo
+    public class CommandInfo(string command, string argumentTemplate, bool installed = false)
     {
-        public string Command { get; set; }
-        public string ArgumentTemplate { get; set; }
-        public bool Installed { get; set; }
-        public CommandInfo(string command, string argumentTemplate, bool installed)
-        {
-            Command = command;
-            ArgumentTemplate = argumentTemplate;
-            Installed = installed;
-        }
+        public string Command { get; set; } = command;
+        public string ArgumentTemplate { get; set; } = argumentTemplate;
+        public bool Installed { get; set; } = installed;
     }
 
     protected readonly IReadOnlyList<CommandInfo> _commandInfos;
@@ -28,7 +23,7 @@ public abstract class UnixAudioPlayer : AudioPlayer
     public override void Play(string file)
     {
         if (!Enabled) return;
-        var commandInfo = _commandInfos.First(c => c.Installed);
+        var commandInfo = _commandInfos.FirstOrDefault(c => c.Installed);
         if (commandInfo == null) return;
         ExecuteCommand($"{commandInfo.Command} {string.Format(commandInfo.ArgumentTemplate, file)}");
     }

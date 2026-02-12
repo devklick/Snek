@@ -1,15 +1,9 @@
 namespace Snek.Core.Audio;
 
-public class AudioManager
+public class AudioManager(bool enabled = true)
 {
-    private readonly AudioPlayer _player;
-    public bool Enabled { get; }
-
-    public AudioManager(bool enabled = true)
-    {
-        Enabled = enabled;
-        _player = AudioPlayer.Create();
-    }
+    private readonly AudioPlayer _player = AudioPlayer.Create();
+    public bool Enabled { get; } = enabled;
 
     public void PlayPlayerMovedSound()
     {

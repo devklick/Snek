@@ -28,36 +28,12 @@ public static class DirectionExtensions
         => _opposites[a] == b;
 
     /// <summary>
-    /// Whether or not the direction looks along the horizontal axis.
-    /// </summary>
-    /// <param name="direction">The direction to be checked</param>
-    /// <returns><c>true</c> if <see cref="Direction.East"/> or <see cref="Direction.West"/>, otherwise <c>false</c></returns>
-    public static bool IsHorizontal(this Direction direction)
-        => direction == Direction.East || direction == Direction.West;
-
-    /// <summary>
-    /// Whether or not the direction looks along the vertical axis.
-    /// </summary>
-    /// <param name="direction">The direction to be checked</param>
-    /// <returns><c>true</c> if <see cref="Direction.North"/> or <see cref="Direction.South"/>, otherwise <c>false</c></returns>
-    public static bool IsVertical(this Direction direction)
-        => !direction.IsHorizontal();
-
-    /// <summary>
     /// Gets the <see cref="Direction"/> that is opposite the specified <see cref="direction"/>.
     /// </summary>
     /// <param name="direction">The direction to be checked.</param>
     /// <returns>The opposite direction</returns>
     public static Direction GetOpposite(this Direction direction)
         => _opposites[direction];
-
-    /// <summary>
-    /// Gets the sprite associated with the specified <paramref name="direction"/>.
-    /// </summary>
-    /// <param name="direction">The <see cref="Direction"/> whose sprite should be returned.</param>
-    /// <returns>The sprite associated with the specified direction.</returns>
-    public static char GetSprite(this Direction direction)
-        => _sprites[direction];
 
     /// <summary>
     /// Builds a dictionary where the key is a <see cref="Direction"/> and the value is the sprite associated with it.
@@ -76,5 +52,30 @@ public static class DirectionExtensions
             map.Add((Direction)enumValue, attribute.Sprite);
         }
         return map;
+    }
+
+    extension(Direction direction)
+    {
+        /// <summary>
+        /// Gets the sprite associated with the specified <paramref name="direction"/>.
+        /// </summary>
+        /// <param name="direction">The <see cref="Direction"/> whose sprite should be returned.</param>
+        /// <returns>The sprite associated with the specified direction.</returns>
+        public char Sprite => _sprites[direction];
+
+        /// <summary>
+        /// Whether or not the direction looks along the horizontal axis.
+        /// </summary>
+        /// <param name="direction">The direction to be checked</param>
+        /// <returns><c>true</c> if <see cref="Direction.East"/> or <see cref="Direction.West"/>, otherwise <c>false</c></returns>
+        public bool IsHorizontal => direction == Direction.East || direction == Direction.West;
+
+
+        /// <summary>
+        /// Whether or not the direction looks along the vertical axis.
+        /// </summary>
+        /// <param name="direction">The direction to be checked</param>
+        /// <returns><c>true</c> if <see cref="Direction.North"/> or <see cref="Direction.South"/>, otherwise <c>false</c></returns>
+        public bool IsVertical => !direction.IsHorizontal;
     }
 }

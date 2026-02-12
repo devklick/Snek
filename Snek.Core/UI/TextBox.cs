@@ -1,9 +1,9 @@
 namespace Snek.Core.UI;
 
-public class TextBox
+public class TextBox(Position offset, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string? value = null)
 {
-    public ConsoleColor BackgroundColor { get; }
-    public ConsoleColor ForegroundColor { get; }
+    public ConsoleColor BackgroundColor { get; } = backgroundColor;
+    public ConsoleColor ForegroundColor { get; } = foregroundColor;
     /// <summary>
     /// The position relative to the parent object that this text box will be drawn.
     /// </summary>
@@ -13,18 +13,9 @@ public class TextBox
     /// <see cref="Alignment.Right"/>, it's relative to the right edge.
     /// Otherwise, when it's <see cref="Alignment.Centre"/>, the <see cref="Position.X"/> property will be ignored.
     /// </remarks>
-    public Position Offset { get; }
-    public Alignment Align { get; }
-    public string? Value { get; set; }
-
-    public TextBox(Position offset, Alignment align, ConsoleColor backgroundColor, ConsoleColor foregroundColor, string? value = null)
-    {
-        Offset = offset;
-        BackgroundColor = backgroundColor;
-        ForegroundColor = foregroundColor;
-        Align = align;
-        Value = value;
-    }
+    public Position Offset { get; } = offset;
+    public Alignment Align { get; } = align;
+    public string? Value { get; set; } = value;
 
     public void SetValue(string value)
     {
@@ -32,5 +23,5 @@ public class TextBox
     }
 
     public virtual List<string?> GetLines()
-        => new() { Value };
+        => [Value];
 }

@@ -1,16 +1,11 @@
 namespace Snek.Core.UI;
 
-public class LabelledTextBox : TextBox
+public class LabelledTextBox(LabelPosition labelPosition, Position offset, Alignment align,
+    ConsoleColor backgroundColor, ConsoleColor foregroundColor, string label, string? value = null)
+    : TextBox(offset, align, backgroundColor, foregroundColor, value)
 {
-    public TextBox Label { get; set; }
-    public LabelPosition LabelPosition { get; set; }
-    public LabelledTextBox(LabelPosition labelPosition, Position offset, Alignment align,
-        ConsoleColor backgroundColor, ConsoleColor foregroundColor, string label, string? value = null)
-        : base(offset, align, backgroundColor, foregroundColor, value)
-    {
-        LabelPosition = labelPosition;
-        Label = new TextBox(offset, align, backgroundColor, foregroundColor, label);
-    }
+    public TextBox Label { get; set; } = new TextBox(offset, align, backgroundColor, foregroundColor, label);
+    public LabelPosition LabelPosition { get; set; } = labelPosition;
 
     /// <summary>
     /// Gets the lines that make up the label and the text box. 

@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Snek.Core;
+using Snek.Core.Extensions;
 using Snek.Core.Settings;
 
 namespace Snek.Core.Cli;
@@ -12,8 +12,8 @@ public class CliArgs
     public GameSettings GameSettings { get; } = GameSettings.Default;
     public bool RequiresHelp { get; private set; }
     public CliHelpInfo HelpInfo { get; private set; }
-    public List<string> Errors { get; } = new();
-    public bool HasError => Errors.Any();
+    public List<string> Errors { get; } = [];
+    public bool HasError => !Errors.IsEmpty;
 
     public CliArgs(string[] args)
     {

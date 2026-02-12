@@ -33,14 +33,14 @@ public class InputManager
             { (GameState.Won, ConsoleKey.Escape), PlayerInput.Quit },
         };
 
-        _actionToKeyMap = new();
+        _actionToKeyMap = [];
 
         foreach (var entry in _KapToActionMap)
         {
             var action = entry.Value;
             var mapping = entry.Key;
 
-            if (!_actionToKeyMap.TryAdd(action, new[] { mapping }))
+            if (!_actionToKeyMap.TryAdd(action, [mapping]))
             {
                 var mappings = _actionToKeyMap[action].Append(mapping);
                 _actionToKeyMap[entry.Value] = mappings;
@@ -70,6 +70,6 @@ public class InputManager
     public IEnumerable<(GameState GameState, ConsoleKey Key)> GetMappingForInput(PlayerInput input)
     {
         _actionToKeyMap.TryGetValue(input, out var mapping);
-        return mapping ?? Array.Empty<(GameState GameState, ConsoleKey Key)>();
+        return mapping ?? [];
     }
 }

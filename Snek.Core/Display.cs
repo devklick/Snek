@@ -37,11 +37,6 @@ public class Display
     private readonly int _heightMultiplier;
 
     /// <summary>
-    /// A simple object intended to be used for locking the <see cref="Draw"/> method.
-    /// </summary>
-    private readonly object drawLock = new();
-
-    /// <summary>
     /// Constructs the display and initializes the console by drawing the grid.
     /// </summary>
     /// <param name="gameGrid">The grid that sits behind the display. All cells associated with the grid will be drawn to the display.</param>
@@ -75,33 +70,30 @@ public class Display
     /// <param name="disableMultipliers">Whether or not multiplication (or rather repetition) of cells should be disabled.</param>
     private void Draw(Cell cell, Position? offset = null, bool disableMultipliers = false)
     {
-        lock (drawLock)
+        offset ??= Position.Default;
+        var _bgCopy = Console.BackgroundColor;
+        var _fgCopy = Console.ForegroundColor;
+
+        Console.BackgroundColor = cell.BackgroundColor;
+        Console.ForegroundColor = cell.SpriteColor;
+
+        var heightMultiplier = disableMultipliers ? 1 : _heightMultiplier;
+        var widthMultiplier = disableMultipliers ? 1 : _widthMultiplier;
+
+        // the grid cell may take up more than one display cell. 
+        for (int r = 0; r < heightMultiplier; r++)
         {
-            offset ??= Position.Default;
-            var _bgCopy = Console.BackgroundColor;
-            var _fgCopy = Console.ForegroundColor;
-
-            Console.BackgroundColor = cell.BackgroundColor;
-            Console.ForegroundColor = cell.SpriteColor;
-
-            var heightMultiplier = disableMultipliers ? 1 : _heightMultiplier;
-            var widthMultiplier = disableMultipliers ? 1 : _widthMultiplier;
-
-            // the grid cell may take up more than one display cell. 
-            for (int r = 0; r < heightMultiplier; r++)
+            for (int c = 0; c < widthMultiplier; c++)
             {
-                for (int c = 0; c < widthMultiplier; c++)
-                {
-                    var x = (cell.Position.X * widthMultiplier) + c + offset.Value.X;
-                    var y = (cell.Position.Y * heightMultiplier) + r + offset.Value.Y;
-                    Console.SetCursorPosition(x, y);
-                    Console.Write(cell.Sprite);
-                }
+                var x = (cell.Position.X * widthMultiplier) + c + offset.Value.X;
+                var y = (cell.Position.Y * heightMultiplier) + r + offset.Value.Y;
+                Console.SetCursorPosition(x, y);
+                Console.Write(cell.Sprite);
             }
-
-            Console.BackgroundColor = _bgCopy;
-            Console.ForegroundColor = _fgCopy;
         }
+
+        Console.BackgroundColor = _bgCopy;
+        Console.ForegroundColor = _fgCopy;
     }
 
     /// <summary>

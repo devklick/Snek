@@ -9,7 +9,7 @@ public class Player : IStyled<PlayerCell>
 {
     public ConsoleColor BackgroundColor => ConsoleColor.White;
     public ConsoleColor SpriteColor => ConsoleColor.Red;
-    public char Sprite => Facing.GetSprite();
+    public char Sprite => Facing.Sprite;
     public Direction Facing { get; private set; }
     public List<PlayerCell> Cells { get; }
     public PlayerCell Head => Cells.First();
@@ -19,12 +19,12 @@ public class Player : IStyled<PlayerCell>
     public Player(FileLogger logger, Position midPoint, int initialLength = 5, Direction facing = Direction.North)
     {
         _logger = logger;
-        Cells = new();
+        Cells = [];
         Facing = facing;
         for (var i = 0; i < initialLength; i++)
         {
-            var x = Facing.IsHorizontal() ? (midPoint.X / 2) + i : midPoint.X;
-            var y = Facing.IsVertical() ? (midPoint.Y / 2) + i : midPoint.Y;
+            var x = Facing.IsHorizontal ? (midPoint.X / 2) + i : midPoint.X;
+            var y = Facing.IsVertical ? (midPoint.Y / 2) + i : midPoint.Y;
             Cells.Add(CreateCell(new(x, y), flipColors: i == 0, Facing));
         }
     }
@@ -80,7 +80,7 @@ public class Player : IStyled<PlayerCell>
             spriteColor = BackgroundColor;
         }
 
-        return new PlayerCell(position, backgroundColor, spriteColor, facing.Value.GetSprite(), facing.Value);
+        return new PlayerCell(position, backgroundColor, spriteColor, facing.Value.Sprite, facing.Value);
     }
 
     public void Reverse()

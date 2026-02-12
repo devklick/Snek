@@ -6,10 +6,10 @@ public class CliHelpInfo
 {
     public static readonly string FullName = "--help";
     public static readonly string ShortName = "-h";
-    public List<CliArgHelpInfo> ArgsInfo = new()
-    {
+    public List<CliArgHelpInfo> ArgsInfo =
+    [
         new CliArgHelpInfo(FullName, ShortName, "Shows this help information")
-    };
+    ];
 
     public override string ToString()
     {

@@ -23,7 +23,7 @@ public class Game
     private readonly InputManager _input;
     private readonly GamePlayTimer _timer;
     private Enemy? _enemy;
-    private GameState _state;
+    private GameState _gameState;
 
     private int _ticksPerSecond;
     private int _score = 0;
@@ -49,15 +49,15 @@ public class Game
         _input = new();
 
         // The order of operations is important here.
-        // Grid has to be created first, obviously
+        // The grid has to be created first
         _grid = new(_settings.Width, _settings.Height);
 
         // The HUD is drawn below the game grid, and it's cells do not get multiplied. 
-        // However we want it's width to the the same as the multiplied grid dimensions.
+        // However we want it's width to the the same as the multiplied grid width.
         // The idea of passing in event's as references isnt great, but it gets the job done.
         _hud = new Hud(settings.HudWidth, settings.HudHeight, new Position(0, _grid.Height), _input, ref ScoreUpdated, ref _timer, ref GameStateUpdated);
 
-        // Next, the display needs to be created, so it knows about and draws the grid
+        // Next, the display needs to be created, so it knows about and draws the grid and HUD
         _display = new(settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);
 
         // Finally, we initialize the various game components that get re-initialized on replay.
@@ -110,13 +110,13 @@ public class Game
     {
         SetGameState(GameState.Playing);
 
-        while (!_state.IsGameplayOver())
+        while (!_gameState.IsOver)
         {
             _logger.LogInfo(GetLogEventType(), "Begin wait", Delay);
             Thread.Sleep(Delay);
             _logger.LogInfo(GetLogEventType(), "End wait");
 
-            var input = _input.GetInput(_state);
+            var input = _input.GetInput(_gameState);
 
             if (input != null)
             {
@@ -128,7 +128,7 @@ public class Game
                 HandleTogglePause();
             }
 
-            if (_state == GameState.Paused) continue;
+            if (_gameState == GameState.Paused) continue;
 
             if (input.HasValue && input.Value.IsDirection(out var direction))
             {
@@ -141,9 +141,9 @@ public class Game
 
     private void ReplayLoop()
     {
-        while (_state.IsGameplayOver())
+        while (_gameState.IsOver)
         {
-            var input = _input.GetInput(_state);
+            var input = _input.GetInput(_gameState);
 
             if (input != null)
             {
@@ -159,7 +159,7 @@ public class Game
             }
             else if (input == PlayerInput.Quit)
             {
-                _state = GameState.Exiting;
+                _gameState = GameState.Exiting;
             }
         }
     }
@@ -169,11 +169,11 @@ public class Game
     /// </summary>
     private void HandleTogglePause()
     {
-        if (_state == GameState.Playing)
+        if (_gameState == GameState.Playing)
         {
             SetGameState(GameState.Paused);
         }
-        else if (_state == GameState.Paused)
+        else if (_gameState == GameState.Paused)
         {
             SetGameState(GameState.Playing);
         }
@@ -335,9 +335,9 @@ public class Game
                 _timer.Start();
                 break;
         }
-        _state = state;
-        _logger.LogInfo(GetLogEventType(), $"Game state updated", _state);
-        GameStateUpdated?.Invoke(this, new(_state));
+        _gameState = state;
+        _logger.LogInfo(GetLogEventType(), $"Game state updated", _gameState);
+        GameStateUpdated?.Invoke(this, new(_gameState));
     }
 
     private string GetLogEventType([CallerMemberName] string memberName = "")

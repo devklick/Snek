@@ -20,7 +20,7 @@ public class GameGrid : IStyled<Cell>, IGrid
     public ConsoleColor SpriteColor => ConsoleColor.DarkGray;
     public char Sprite => ' ';
 
-    public List<Cell> Cells { get; } = new();
+    public List<Cell> Cells { get; } = [];
     private Player? _player;
     private Enemy? _enemy;
     private readonly Random _random = new();

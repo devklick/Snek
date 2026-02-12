@@ -1,15 +1,9 @@
 namespace Snek.Core.Cli;
 
-public class CliArgValidation
+public class CliArgValidation(bool valid, object? value = null)
 {
-    public object? Value { get; }
-    public bool Valid { get; }
-
-    public CliArgValidation(bool valid, object? value = null)
-    {
-        Valid = valid;
-        Value = value;
-    }
+    public object? Value { get; } = value;
+    public bool Valid { get; } = valid;
 
     public static CliArgValidation Failed()
         => new(false);

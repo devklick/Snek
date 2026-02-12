@@ -1,24 +1,18 @@
 using System.Text;
+using Snek.Core.Extensions;
 
 namespace Snek.Core.Cli;
 
-public class CliArgHelpInfo
+public class CliArgHelpInfo(string fullName, string shortName, string description)
 {
     private readonly string _ = "  ";
-    public string FullName { get; }
-    public string ShortName { get; }
-    public string Description { get; }
+    public string FullName { get; } = fullName;
+    public string ShortName { get; } = shortName;
+    public string Description { get; } = description;
     public string? Type { get; set; }
     public string? Validation { get; set; }
     public List<(string Value, string Description)> AllowedValues { get; set; } = new();
     public string? Default { get; set; }
-
-    public CliArgHelpInfo(string fullName, string shortName, string description)
-    {
-        FullName = fullName;
-        ShortName = shortName;
-        Description = description;
-    }
 
     public override string ToString()
     {
@@ -49,7 +43,7 @@ public class CliArgHelpInfo
 
     private void AddAllowedValues(StringBuilder sb)
     {
-        if (AllowedValues.Any())
+        if (!AllowedValues.IsEmpty)
         {
             foreach (var (value, description) in AllowedValues)
             {

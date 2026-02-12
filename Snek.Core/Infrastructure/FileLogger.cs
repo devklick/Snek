@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace Snek.Core.Infrastructure;
 
@@ -8,7 +7,7 @@ public class FileLogger
     private string _path;
     private string _fileName;
     private LogLevel[] _logLevels;
-    private readonly LogLevel[] _allLogLevels = new[] { LogLevel.Debug, LogLevel.Info, LogLevel.Error };
+    private readonly LogLevel[] _allLogLevels = [LogLevel.Debug, LogLevel.Info, LogLevel.Error];
     private readonly bool _enabled;
 
     public FileLogger(bool enabled, params LogLevel[] logLevels)
@@ -25,7 +24,7 @@ public class FileLogger
         var filePath = Path.Join(_path, _fileName);
         var logMessage = PrepareLogMessage(logLevel, eventType, message, parameters);
 
-        File.AppendAllLines(filePath, new[] { logMessage });
+        File.AppendAllLines(filePath, [logMessage]);
     }
 
     public void LogDebug(string eventType, string message, params object[] parameters)
@@ -43,7 +42,7 @@ public class FileLogger
     [MemberNotNull(nameof(_path)), MemberNotNull(nameof(_fileName)), MemberNotNull(nameof(_logLevels))]
     public void Initialize(params LogLevel[] logLevels)
     {
-        _logLevels = logLevels.Any() ? logLevels : _allLogLevels;
+        _logLevels = logLevels.Length != 0 ? logLevels : _allLogLevels;
 
         _path = Path.Join(
             Directory.GetCurrentDirectory(),
