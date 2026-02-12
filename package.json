@@ -4,6 +4,9 @@
   "description": "A terminal version of the classic mobile game, Snake.",
   "private": true,
   "main": "index.js",
+  "engines": {
+    "node": "24"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,7 +22,7 @@
   "homepage": "https://github.com/devklick/Snek#readme",
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/exec": "^6.0.3",
-    "semantic-release": "^21.0.5"
+    "@semantic-release/exec": "^7.1.0",
+    "semantic-release": "^25.0.3"
   }
 }
