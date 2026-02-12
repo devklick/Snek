@@ -18,12 +18,12 @@ jobs:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
           node-version: 18.x
 
@@ -31,9 +31,9 @@ jobs:
         run: npm install
 
       - name: Setup .Net
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Install .Net dependencies
         run: dotnet restore
@@ -68,12 +68,12 @@ jobs:
       RELEASE_VERSION: ${{needs.build-and-test.outputs.next-release-version}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
           node-version: 18.x
 
@@ -81,9 +81,9 @@ jobs:
         run: npm install
 
       - name: Setup .Net
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Run publish Windows
         run: dotnet publish -c release -r win-x64 ./Snek.Console "-p:Version=${{ env.RELEASE_VERSION }}" -o build/win-x64
