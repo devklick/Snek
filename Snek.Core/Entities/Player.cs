@@ -87,7 +87,7 @@ public class Player : IStyled<PlayerCell>
     {
         LogSelf();
 
-        var nextHeadFacing = GetNextHeadFacingDirection();
+        var nextHeadFacing = ReverseHeadDirection();
 
         ReverseCells(nextHeadFacing);
 
@@ -122,7 +122,7 @@ public class Player : IStyled<PlayerCell>
         }
     }
 
-    private Direction GetNextHeadFacingDirection()
+    private Direction ReverseHeadDirection()
     {
         // If possible, the reversed snake should face the direction 
         // that is opposite to the direction it is currently facing.
