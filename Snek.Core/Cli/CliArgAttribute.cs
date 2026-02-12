@@ -18,20 +18,19 @@ public class CliArgAttribute : Attribute
     /// The short name of the command line argument, usually a single character.
     /// </summary>
     /// <example>-w</example>
-    public string ShortName { get; }
+    public string[] ShortNames { get; }
 
     /// <summary>
     /// Constructs a <see cref="CliArgAttribute"/> with defined argument names.
     /// </summary>
     /// <param name="fullName">The full name for the arg, e.g. <c>--width</c>. Will be prepended with <c>--</c> if not present.</param>
-    /// <param name="shortName">The short name for the arg. Usually one character, e.g. <c>-w</c>. Will be prepended with <c>-</c> if not present.</param>
-    public CliArgAttribute(string fullName, string shortName)
+    /// <param name="shortNames">The short name for the arg. Usually one character, e.g. <c>-w</c>. Will be prepended with <c>-</c> if not present.</param>
+    public CliArgAttribute(string fullName, params string[] shortNames)
     {
         FullName = fullName;
-        ShortName = shortName;
-
         if (!FullName.StartsWith("--")) FullName = $"--{FullName}";
-        if (!ShortName.StartsWith('-')) ShortName = $"-{ShortName}";
+
+        ShortNames = [.. shortNames.Select(shortName => shortName.StartsWith('-') ? shortName : $"-{shortName}")];
     }
 
     /// <summary>

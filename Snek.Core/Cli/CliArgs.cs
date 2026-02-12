@@ -32,7 +32,7 @@ public class CliArgs
             var name = args[i];
             var value = args.Length >= i + 2 ? args[i + 1] : null;
 
-            var (argProp, attr) = argProps.FirstOrDefault(a => a.attr.FullName == name || a.attr.ShortName == name);
+            var (argProp, attr) = argProps.FirstOrDefault(a => a.attr.FullName == name || a.attr.ShortNames.Any(shortName => shortName == name));
 
             if (attr == null)
             {
@@ -60,7 +60,7 @@ public class CliArgs
             var description = GetDescription(argProp);
             var typeInfo = GetTypeInfo(argProp);
 
-            var cliArg = new CliArgHelpInfo(attr.FullName, attr.ShortName, description)
+            var cliArg = new CliArgHelpInfo(attr.FullName, attr.ShortNames, description)
             {
                 Default = GetDefault(argProp),
                 Type = typeInfo.Type,

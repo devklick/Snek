@@ -19,11 +19,11 @@ public class GameSettings
         DebugLogging = false,
     };
 
-    [CliArg("width", "x"), Range(13, 80)]
+    [CliArg("width", "w", "x"), Range(13, 80)]
     [Description("The number of cells along the horizontal axis")]
     public int Width { get; set; }
 
-    [CliArg("height", "y"), Range(6, 80)]
+    [CliArg("height", "h", "y"), Range(6, 80)]
     [Description("The number of cells along the vertical axis")]
     public int Height { get; set; }
 

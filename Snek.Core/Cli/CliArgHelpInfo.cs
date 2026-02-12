@@ -3,27 +3,29 @@ using Snek.Core.Extensions;
 
 namespace Snek.Core.Cli;
 
-public class CliArgHelpInfo(string fullName, string shortName, string description)
+public class CliArgHelpInfo(string fullName, string[] shortNames, string description)
 {
     private readonly string _ = "  ";
     public string FullName { get; } = fullName;
-    public string ShortName { get; } = shortName;
+    public string[] ShortNames { get; } = shortNames;
     public string Description { get; } = description;
     public string? Type { get; set; }
     public string? Validation { get; set; }
-    public List<(string Value, string Description)> AllowedValues { get; set; } = new();
+    public List<(string Value, string Description)> AllowedValues { get; set; } = [];
     public string? Default { get; set; }
 
     public override string ToString()
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine($"{_}{FullName}, {ShortName}");
+        sb.AppendLine($"{_}{string.Join(", ", [FullName, .. ShortNames])}");
         sb.AppendLine($"{_}{_}{Description}");
 
         AddTypeAndValidation(sb);
         AddAllowedValues(sb);
         AddDefaultValue(sb);
+        var list = new List<string>();
+        List<string> other = [.. list];
 
         return sb.ToString();
     }
