@@ -5,13 +5,14 @@
 <h1>Snek</h1>
 
 <a href="https://github.com/devklick/Snek/blob/main/README.md" alt="Go To Readme">
-	<img title="Go To Readme" alt="Go To Readme" src="https://raw.githubusercontent.com/dotnet/dotnet-console-games/main/.github/resources/readme-black.svg">
+    <img title="Go To Readme" alt="Go To Readme"
+        src="https://raw.githubusercontent.com/dotnet/dotnet-console-games/main/.github/resources/readme-black.svg">
 </a>
 
 <div class="console-window text-center my-3" @onkeydown="@Console.OnKeyDown" tabindex="0">
-	<div class="d-inline-block bg-dark text-light border p-2 text-start shadow padding-0">
-		<pre class="console">
-			<code>@Console.State</code>
+    <div class="d-inline-block bg-dark text-light border p-2 text-start shadow padding-0">
+        <pre class="console">
+            <code>@Console.State</code>
             <style>
                 code {
                     display: grid;
@@ -20,11 +21,11 @@
                     grid-template-rows: repeat(@GridRows, 1fr);
                 }
             </style>
-		</pre>
-	</div>
+        </pre>
+    </div>
 </div>
 
-@code 
+@code
 {
     int GridRows => Console.WindowHeight + 1;
     int GridColumns => Console.WindowWidth + 1;
@@ -34,9 +35,32 @@
     Snek.Core.Game Game;
     public Index()
     {
+        /*
+        Snek was originally designed as a console game and is event driven, meaning
+        that whenever the game decides one of the cells have been updated, an event
+        is fired and handled by the class that manages displaying things.
+        This works well (enough) on console because we can update each cell (pixel) individually,
+        we only update the cells (pixels) that have actually changed.
+
+        This doesnt translate well in Blazor since we dont have fine grained control over what to update.
+        Instead, we disable the event based approach and pass in a function to be executed
+        at the end of every game loop. This function checks if the display state has changed,
+        and if so, forces the grid to be refreshed. It works... poorly, but it works.
+
+        */
         Console = new WebConsole();
         Console.TriggerRefresh = StateHasChanged;
-        Game = new(Core.Settings.GameSettings.Default, Console);
+        Game = new(Core.Settings.GameSettings.Default, Console, async () =>
+        {
+            if (Console.StateHasChanged)
+            {
+                await Console.ForceRefresh();
+            }
+        });
     }
-    protected override void OnInitialized() => InvokeAsync(Game.Play);
+    protected override void OnInitialized()
+    {
+        @* Console.UpdatesEnabled = true; *@
+        InvokeAsync(Game.Play);
+    }
 }

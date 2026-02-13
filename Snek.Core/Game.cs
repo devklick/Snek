@@ -33,8 +33,9 @@ public class Game
     private readonly GameSettings _settings;
     private readonly AudioManager _audio;
     private readonly FileLogger _logger;
+    private readonly Func<Task>? _afterLoop;
 
-    public Game(GameSettings settings, IConsole console)
+    public Game(GameSettings settings, IConsole console, Func<Task>? afterLoop = null)
     {
         _settings = settings;
         _logger = new FileLogger(_settings.DebugLogging);
@@ -59,6 +60,8 @@ public class Game
 
         // Next, the display needs to be created, so it knows about and draws the grid
         _display = new(console, settings.DisplayWidth, settings.DisplayHeight, settings.DisplayWidthMultiplier, settings.DisplayHeightMultiplier, _grid, _hud);
+
+        _afterLoop = afterLoop;
 
         // Finally, we initialize the various game components that get re-initialized on replay.
         Initialize();
@@ -128,14 +131,16 @@ public class Game
                 HandleTogglePause();
             }
 
-            if (_state == GameState.Paused) continue;
-
-            if (input.HasValue && input.Value.IsDirection(out var direction))
+            if (_state != GameState.Paused)
             {
-                HandleChangeDirection(direction!.Value);
+                if (input.HasValue && input.Value.IsDirection(out var direction))
+                {
+                    HandleChangeDirection(direction!.Value);
+                }
             }
 
             await Tick();
+            _afterLoop?.Invoke();
         }
     }
 

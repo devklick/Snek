@@ -17,8 +17,10 @@ public class WebConsole : IConsole
 
     public bool KeyAvailable => _inputs.Any();
     public Action? TriggerRefresh;
-    public bool StateHasChanged { get; set; } = true;
+    public bool StateHasChanged { get; set; } = false;
     private Position _cursorPosition = Position.Default;
+
+    public bool UpdatesEnabled { get; set; }
 
     private Cell[,] View;
 
@@ -84,12 +86,14 @@ public class WebConsole : IConsole
     }
     public async Task Refresh()
     {
-        if (StateHasChanged)
+        if (StateHasChanged && UpdatesEnabled)
         {
             TriggerRefresh?.Invoke();
         }
         await Task.Delay(_delay);
     }
+    public async Task ForceRefresh()
+        => TriggerRefresh?.Invoke();
 
     public void EnqueueInput(ConsoleKey key, bool shift = false, bool alt = false, bool control = false)
     {
